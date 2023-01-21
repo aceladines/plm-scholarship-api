@@ -44,7 +44,7 @@ const applicationForm = new Schema({
     },
     email: {
         type: String,
-        required: true
+        required: true,
     },
     college: {
         type: String,
@@ -100,6 +100,6 @@ const applicationForm = new Schema({
     files: studentRegFormFilesSchema
 });
 
-const applicationInfoForm = models.applicationInfoForm || model('applicationInfoForm', applicationForm);
+const applicationFormData = models.applicationFormData || model('applicationFormData', applicationForm);
 
-module.exports = applicationInfoForm;
+module.exports = applicationFormData;
