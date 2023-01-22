@@ -18,6 +18,7 @@
     "helmet": "^6.0.1",
     "joi": "^17.7.0",
     "mongoose": "^6.8.4",
+    "nodemailer": "^6.9.0",
     "nodemon": "^2.0.20",
     "rate-limiter-flexible": "^2.4.1",
     "routes": "^2.1.0"

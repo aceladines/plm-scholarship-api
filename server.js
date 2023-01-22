@@ -35,6 +35,9 @@ app.use('/application', applicationRouter)
 const applicantsRouter = require('./routes/applicants')
 app.use('/applicants', applicantsRouter)
 
+const adminRouter = require('./routes/admin')
+app.use('/admin', adminRouter)
+
 // Get error message from Joi Validator
 app.use(errors())
 
@@ -51,5 +54,5 @@ app.use(function (req, res) {
 });
 
 app.listen(port, () => {
-    console.log(`Server Started at ${port}`);
+    console.log(`Server Started at ${port},`);
 });

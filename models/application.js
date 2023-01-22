@@ -78,6 +78,10 @@ const applicationForm = new Schema({
         type: Boolean,
         required: true
     },
+    dateApplied: {
+        type: Date,
+        required: true
+    },
     approvalStatus: {
         type: String,
         required: true
@@ -96,6 +100,9 @@ const applicationForm = new Schema({
     },
     rank: {
         type: Number
+    },
+    scholarshipProvider:{
+      type: String
     },
     files: studentRegFormFilesSchema
 });

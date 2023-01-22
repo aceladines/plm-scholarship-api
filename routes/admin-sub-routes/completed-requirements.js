@@ -1,31 +1,30 @@
 const express = require('express');
 const router = express.Router();
-applicantsInfo = require('../models/application')
+applicantsInfo = require('../../models/application')
 
+router.put('/move', async (req,res) =>{
+    // Dummy Field
+    const toMove = {
+        studentNumber: [202011759],
+        provider: 'SM-Scholarship'
+    }
 
-
-// Get one applicant by email or studentNumber
-router.get('/:id', async (req, res) => {
     try {
+        for (const student in toMove.studentNumber) {
+             const movedStudents = await applicantsInfo.findOneAndUpdate({studentNum: toMove.studentNumber[student]}, {scholarshipProvider: toMove.provider})
+        }
 
-        let applicant
-        let searchParam = req.params.id
-        let regexStart = /^[a-zA-Z]/
-        let regexEnd = /[a-zA-Z]$/
-
-        if(regexStart.test(searchParam.toString()) || regexEnd.test(searchParam.toString()))  applicant = await applicantsInfo.findOne({email: req.params.id}) ?? 'Applicant does not exist!'
-        else applicant = await applicantsInfo.findOne({studentNum: req.params.id}) ?? 'Applicant does not exist!'
-
-        res.status(200).json({applicant})
+        res.status(200).json({message: 'Successfully moved student/s!'})
     }catch (e) {
-        res.status(500).json({error:e.message});
+        res.status(500).json({error: e.message})
     }
 })
 
-// Get all applicants
-router.get('/*', async (req, res) => {
+router.get('/*',  async (req,res) =>{
 
-    let options = {};
+    let options = {
+        approvalStatus: 'APPROVED'
+    };
 
     if (req.query.yearlvl && req.query.course) {
         options.year = req.query.yearlvl;
@@ -46,7 +45,7 @@ router.get('/*', async (req, res) => {
             .exec();
 
         // get total documents in the Posts collection
-        const count = await applicantsInfo.countDocuments();
+        const count = await applicantsInfo.countDocuments({approvalStatus: 'APPROVED'});
 
         // return response with posts, total pages, and current page
         res.status(200).json({
@@ -61,6 +60,6 @@ router.get('/*', async (req, res) => {
     catch (e) {
         res.status(500).json(e.message);
     }
-});
+})
 
 module.exports = router

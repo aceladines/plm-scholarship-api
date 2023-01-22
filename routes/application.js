@@ -8,7 +8,7 @@ router.post('/',celebrate({
     [Segments.BODY]: Joi.object().keys({
         studentNum: Joi.string().trim().required(),
         firstName: Joi.string().trim().required(),
-        middleName: Joi.string().trim(),
+        middleName: Joi.string().trim().allow('').optional(),
         lastName: Joi.string().trim().required(),
         gender: Joi.string().trim().required(),
         email: Joi.string().trim().email().required(),
@@ -23,12 +23,24 @@ router.post('/',celebrate({
         approvalStatus: Joi.string().trim().required(),
     })
 }),async (req,res)=>{
-    try {
-        const apply = await applicationForm.create(req.body)
-        res.status(200).json({message: 'Application successful'})
-    }catch (e) {
-        res.status(500).json({error: e.message ,message: 'Error when creating application'})
-    }
+
+        // Instantiate auto defined properties (dateApplied, approvalStatus)
+
+        // *(dateApplied)
+        req.body.dateApplied = new Date().toISOString()
+
+        // Before saving, will check in the email provided is already in use
+        const exist = await applicationForm.findOne({email: req.body.email})
+
+        if(exist) res.status(400).json({error: 'Email already in use'})
+        else{
+            try {
+                const apply = await applicationForm.create(req.body)
+                res.status(200).json({message: 'Application successful'})
+            } catch (e) {
+                res.status(500).json({error: e.message})
+            }
+        }
 })
 
 module.exports = router
