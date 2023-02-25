@@ -68,6 +68,9 @@ router.post('/approve', async (req, res) => {
             res.status(500).json({message:e.message})
         }
         }
+    else{
+        res.status(404).json({message: 'Applicant does not exists!'})
+    }
 })
 
 // Get all data whose approvalStatus = (APPROVED, RESUBMISSION)

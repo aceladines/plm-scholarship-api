@@ -22,8 +22,22 @@ module.exports.sendEmail = async function (params) {
     let emailInfo = [
         {
             subject: "Scholarship Approved!",
-            h2: "Congratulations! you are now qualified for the University scholarship program!",
-            h4: "Please standby for more information in accordance to OSDS."
+            html: `
+            <div class="approved" style=" background-color: #4CAF50;
+              color: white;
+              padding: 16px;
+              font-size: 16px;
+              text-align: center;
+              border-radius: 5px;
+              box-shadow: 0px 0px 10px #888888;">
+            <h1 style="margin-top: 0;">Congratulations!</h1>
+            <p style="margin-bottom: 10px; font-size: 14px;">Dear ${params.TO}</p>
+            <p style="margin-bottom: 10px; font-size: 14px;">We are pleased to inform you that your scholarship application has been approved. Congratulations on this achievement! We are excited to provide you with the financial support you need to continue your education.</p>
+            <p style="margin-bottom: 10px; font-size: 14px;">Please let us know if you have any questions or concerns.</p>
+            <p style="margin-bottom: 10px; font-size: 14px;">Thank you for your interest in our program and for your hard work in applying.</p>
+            <p style="margin-bottom: 10px; font-size: 14px;">Best regards,</p>
+            <p style="margin-bottom: 10px; font-size: 14px;">OSDS</p>
+            </div>`
         },
         {
             subject: "Scholarship Declined!",
@@ -46,11 +60,7 @@ module.exports.sendEmail = async function (params) {
             from: '"OSDS" <ajladines@gmail.com>', // sender address
             to: params.TO,
             subject: `${emailInfo[option].subject}`, // Subject line
-            html: `<div class="container" style="max-width: 90%; margin: auto; padding-top: 20px">
-                    <h2>${emailInfo[option].h2}</h2>
-                    <h4>${emailInfo[option].h4}</h4>
-                    <p style="margin-bottom: 30px;">${emailInfo[option].message || ''} </p>
-                   </div>`,
+            html: `${emailInfo[option].html}`,
             headers: {
                 'X-Outlook-Client': 'Microsoft Outlook'
             }

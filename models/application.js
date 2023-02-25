@@ -2,10 +2,12 @@ const { Schema, model, models } = require('mongoose');
 
 const studentRegFormFileSchema = new Schema({
     fileName: {
-        type: String
+        type: String,
+        required: true
     },
     filePath: {
-        type: String
+        type: String,
+        required: true
 
     }
 });
@@ -23,7 +25,7 @@ const studentRegFormFilesSchema = new Schema({
 
 const applicationForm = new Schema({
     studentNum: {
-        type: Number,
+        type: String,
         required: true,
         unique: true
     },

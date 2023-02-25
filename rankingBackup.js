@@ -5,13 +5,13 @@ applicantsInfo = require('../../models/application')
 router.put('/move', async (req,res) =>{
     // Dummy Field
     const toMove = {
-        studentNumber: [13],
+        studentNumber: [202011759],
         provider: 'SM-Scholarship'
     }
 
     try {
         for (const student in toMove.studentNumber) {
-            const movedStudents = await applicantsInfo.findOneAndUpdate({studentNum: toMove.studentNumber[student]}, {scholarshipProvider: toMove.provider, approvalStatus: 'CANDIDATE'})
+            const movedStudents = await applicantsInfo.findOneAndUpdate({studentNum: toMove.studentNumber[student]}, {scholarshipProvider: toMove.provider})
         }
 
         res.status(200).json({message: 'Successfully moved student/s!'})
@@ -62,6 +62,8 @@ router.get('/*', async (req, res) => {
             let set = new Set(totalScoreArr)
             let distinctElems = [...set]
 
+            console.log(totalScoreArr)
+
             // Counting occurences of 'totalScore' values
             let occurence = totalScoreArr.reduce(function(acc, current) {
                 if (acc[current]) {
@@ -72,6 +74,7 @@ router.get('/*', async (req, res) => {
                 return acc;
             }, {});
 
+            console.log("Occurence: " + JSON.stringify(occurence))
 
             let keys = [],k ,i ,len
 
@@ -83,13 +86,14 @@ router.get('/*', async (req, res) => {
 
             // Sorting the keys
             keys.sort().reverse()
+            console.log(keys)
 
             len = keys.length;
             let sortedOccuranceArr = []
 
             for (i = 0; i < len; i++) {
                 k = keys[i];
-                sortedOccuranceArr.push(occurence[k])
+                console.log(sortedOccuranceArr.push(occurence[k]));
             }
 
 
@@ -142,6 +146,8 @@ router.get('/*', async (req, res) => {
             });
 
         }
+
+
     } catch (e) {
         res.status(404).json(e.message);
     }
