@@ -106,6 +106,9 @@ const applicationForm = new Schema({
     scholarshipProvider:{
       type: String
     },
+    providerOpeningDate:{
+        type: Date
+    },
     files: studentRegFormFilesSchema
 });
 
