@@ -1,27 +1,24 @@
 const express = require("express");
 const router = express.Router();
-applicantsInfo = require("../../models/application");
-providerOpeningDates = require("../../models/providerOpeningDates");
+const applicantsInfo = require("../../models/application");
+const provider = require("../../models/provider");
 
 router.put("/move", async (req, res) => {
   // Dummy Field
   const toMove = {
     studentNumber: [3],
-    provider: "SM-Scholarship",
-    providerOpeningDate: "2023-03-25",
+    provider: "Robinsons-Scholarship",
+    providerOpeningDate: "2023-03-26",
   };
 
   try {
     //Update the status of each moved student into 'APPROVED'
     let movedStudents;
 
-    for (const student in toMove.studentNumber) {
+    for (const student of toMove.studentNumber) {
       movedStudents = await applicantsInfo.findOneAndUpdate(
         {
-          $and: [
-            { studentNum: toMove.studentNumber[student] },
-            { approvalStatus: "PENDING" },
-          ],
+          $and: [{ studentNum: student }, { approvalStatus: "APPROVED" }],
         },
         {
           scholarshipProvider: toMove.provider,
@@ -32,31 +29,39 @@ router.put("/move", async (req, res) => {
     }
 
     if (movedStudents !== null) {
-      const filter = {
+      const existingProvider = await provider.findOne({
         "providerAndDates.providerName": toMove.provider,
-        "providerAndDates.providerOpeningDate": toMove.providerOpeningDate,
-      };
-      const update = {
-        $setOnInsert: {
-          providerAndDates: {
-            providerName: toMove.provider,
-            providerOpeningDate: toMove.providerOpeningDate,
+      });
+
+      if (existingProvider) {
+        // If the provider exists, append the new opening date to its array
+        await provider.findOneAndUpdate(
+          {
+            "providerAndDates.providerName": toMove.provider,
           },
-        },
-      };
-      const options = { upsert: true };
-
-      const result = await providerOpeningDates.updateOne(
-        filter,
-        update,
-        options
-      );
-
-      if (result.upsertedCount > 0) {
-        console.log(
-          `Provider and provider opening date added to existing document!`
+          {
+            $push: {
+              "providerAndDates.$.providerOpeningDate": {
+                date: toMove.providerOpeningDate,
+              },
+            },
+          }
         );
+        console.log("New provider opening date added!");
+      } else {
+        // If the provider doesn't exist, create a new provider document with the opening date
+        const newProvider = new provider({
+          providerAndDates: [
+            {
+              providerName: toMove.provider,
+              providerOpeningDate: [{ date: toMove.providerOpeningDate }],
+            },
+          ],
+        });
+        await newProvider.save();
+        console.log("New provider and provider opening date added!");
       }
+
       res.status(200).json({ message: "Successfully moved student/s!" });
     } else {
       res.status(400).json({ message: "No student/s to move!" });

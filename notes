@@ -1,0 +1,26 @@
+ // else {
+      //   const filter = {
+      //     "providerAndDates.providerName": toMove.provider,
+      //   };
+
+      //   const update = {
+      //     $addToSet: {
+      //       "providerAndDates.$.providerOpeningDate":
+      //         toMove.providerOpeningDate,
+      //     },
+      //   };
+
+      //   const options = { upsert: true };
+
+      //   const result = await providerOpeningDates.updateOne(
+      //     filter,
+      //     update,
+      //     options
+      //   );
+
+      //   if (result.upsertedCount > 0) {
+      //     console.log(
+      //       `Provider and provider opening date added to existing document!`
+      //     );
+      //   }
+      // }

@@ -6,7 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const router = express.Router();
 applicantsInfo = require("../../models/application");
-providerOpeningDates = require("../../models/providerOpeningDates");
+provider = require("../../models/provider");
 
 router.get("/generate-csv", async (req, res) => {
   // Dummy data
@@ -147,29 +147,35 @@ router.get("/generate-csv", async (req, res) => {
   console.log(`The compressed archive is being written to ${outputFilePath}`);
 });
 
+router.get("/");
+
 // Default
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
-  const initialOption = await providerOpeningDates
-    .findOne()
-    .sort({ _id: -1 })
-    .exec((err, data) => {
-      if (err) {
-        console.log(err.message);
-      }
-      if (data) {
-        console.log(data);
-      }
-    });
+  const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
+  console.log(initialOption);
+
+  //Initial options
+  let initialOptions = {
+    provider: initialOption.providerAndDates[0].providerName,
+    providerOpeningDate:
+      initialOption.providerAndDates[0].providerOpeningDate[
+        initialOption.providerAndDates[0].providerOpeningDate.length - 1
+      ].date,
+  };
+
+  console.log("Initial Option: ");
+  console.log(initialOptions);
 
   // Dummy options
   let options = {
     approvalStatus: "APPROVED",
-    provider: providerOpeningDates.provider,
-    providerOpeningDate: providerOpeningDates.openingDate,
+    scholarshipProvider: null ?? initialOptions.provider,
+    providerOpeningDate: null ?? initialOptions.providerOpeningDate,
   };
 
-  // Tanginamo
+  //Get provider names and provider opening dates
+  const providerNamesAndOpenings = await provider.find().exec();
 
   //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
 
@@ -194,6 +200,7 @@ router.get("/*", async (req, res) => {
       currentPage: page,
       limit,
       totalCount: count,
+      providerNamesAndOpenings,
     });
   } catch (e) {
     res.status(500).json(e.message);
