@@ -6,6 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const router = express.Router();
 applicantsInfo = require("../../models/application");
+providerOpeningDates = require("../../models/providerOpeningDates");
 
 router.get("/generate-csv", async (req, res) => {
   // Dummy data
@@ -148,11 +149,24 @@ router.get("/generate-csv", async (req, res) => {
 
 // Default
 router.get("/*", async (req, res) => {
+  //LIFO (Last In First Out)
+  const initialOption = await providerOpeningDates
+    .findOne()
+    .sort({ _id: -1 })
+    .exec((err, data) => {
+      if (err) {
+        console.log(err.message);
+      }
+      if (data) {
+        console.log(data);
+      }
+    });
+
   // Dummy options
   let options = {
     approvalStatus: "APPROVED",
-    provider: "",
-    providerOpeningDate: "",
+    provider: providerOpeningDates.provider,
+    providerOpeningDate: providerOpeningDates.openingDate,
   };
 
   //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
