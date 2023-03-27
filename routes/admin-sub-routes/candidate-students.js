@@ -169,6 +169,8 @@ router.get("/*", async (req, res) => {
     providerOpeningDate: providerOpeningDates.openingDate,
   };
 
+  // Tanginamo
+
   //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
 
   const page = req.query.page || 1;
