@@ -8,117 +8,54 @@ const router = express.Router();
 applicantsInfo = require("../../models/application");
 provider = require("../../models/provider");
 
+let csvData;
+
 router.get("/generate-csv", async (req, res) => {
-  // Dummy data
+  const document1 = [],
+    document2 = [],
+    document3 = [];
 
-  const documents1 = [
-    {
-      No: 1,
-      "Name of Candidate": "John Doe",
-      "Degree Program": "BSIT",
-      Rank: 1,
-      Remarks: "Approved",
-    },
-    {
-      No: 2,
-      "Name of Candidate": "Jane Doe",
-      "Degree Program": "BSIT",
-      Rank: 2,
-      Remarks: "Approved",
-    },
-    {
-      No: 3,
-      "Name of Candidate": "John Ilacad",
-      "Degree Program": "BSIT",
-      Rank: 3,
-      Remarks: "Approved",
-    },
-    {
-      No: 4,
-      "Name of Candidate": "Ace Ladines",
-      "Degree Program": "BSIT",
-      Rank: 4,
-      Remarks: "Approved",
-    },
-  ];
+  for (const data of csvData) {
+    document1.push({
+      "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
+      "Degree Program": data.course,
+      Rank: data.rank,
+      Remarks: data.approvalStatus,
+    });
+  }
 
-  const documents2 = [
-    {
-      Name: "Jane Doe",
-      Year: "1st",
-      College: "CET",
-      "Degree Program": "BSIT",
-      Contact: "09123456789",
-      GWA: 1,
-      Equiv: 1,
-      "Parents' Household Income": 100000,
-      Equiv: 1,
-      "Total Score": 6.5,
-      Rank: 1,
-    },
-    {
-      Name: "Jane Doe",
-      Year: "1st",
-      College: "CET",
-      "Degree Program": "BSIT",
-      Contact: "09123456789",
-      GWA: 1,
-      Equiv: 1,
-      "Parents' Household Income": 100000,
-      Equiv: 1,
-      "Total Score": 6.5,
-      Rank: 1,
-    },
-    {
-      Name: "Jane Doe",
-      Year: "1st",
-      College: "CET",
-      "Degree Program": "BSIT",
-      Contact: "09123456789",
-      GWA: 1,
-      Equiv: 1,
-      "Parents' Household Income": 100000,
-      Equiv: 1,
-      "Total Score": 6.5,
-      Rank: 1,
-    },
-  ];
-
-  const documents3 = [
-    {
-      No: 1,
-      "Name of Candidate": "John Doe",
-      "Degree Program": "BSIT",
-      Rank: 1,
-    },
-    {
-      No: 2,
-      "Name of Candidate": "Jane Doe",
-      "Degree Program": "BSIT",
-      Rank: 2,
-    },
-    {
-      No: 3,
-      "Name of Candidate": "John Ilacad",
-      "Degree Program": "BSIT",
-      Rank: 3,
-    },
-    {
-      No: 4,
-      "Name of Candidate": "Ace Ladines",
-      "Degree Program": "BSIT",
-      Rank: 4,
-    },
-  ];
+  for (const data of csvData) {
+    document2.push({
+      Name: `${data.firstName} ${data.middleName} ${data.lastName}`,
+      Year: data.year,
+      College: data.college,
+      "Degree Program": data.course,
+      Contact: data.mobileNum,
+      GWA: data.currentGwa,
+      Equiv: data.EquivGWA,
+      "Parents' Household Income": data.householdIncome,
+      Equiv: data.EquivInc,
+      "Total Score": data.totalScore,
+      Rank: data.rank,
+    });
+  }
+  csvData.map((data, index) => {
+    document3.push({
+      No: index + 1,
+      "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
+      "Degree Program": data.course,
+      Rank: data.rank,
+    });
+  });
 
   const opts = {};
   const transformOpts = {};
   const asyncOpts = {};
   const parser = new AsyncParser(opts, transformOpts, asyncOpts);
 
-  const csv1 = await parser.parse(documents1).promise();
-  const csv2 = await parser.parse(documents2).promise();
-  const csv3 = await parser.parse(documents3).promise();
+  const csv1 = await parser.parse(document1).promise();
+  const csv2 = await parser.parse(document2).promise();
+  const csv3 = await parser.parse(document3).promise();
 
   const archive = archiver("zip", {
     zlib: { level: 9 }, // Sets the compression level.
@@ -146,8 +83,6 @@ router.get("/generate-csv", async (req, res) => {
   // Log a message to indicate that the file has been written.
   console.log(`The compressed archive is being written to ${outputFilePath}`);
 });
-
-router.get("/");
 
 // Default
 router.get("/*", async (req, res) => {
@@ -189,6 +124,17 @@ router.get("/*", async (req, res) => {
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
+
+    const selectedFields = {
+      _id: 0,
+      _v: 0,
+      files: 0,
+    };
+
+    csvData = await applicantsInfo.find(options).select(selectedFields).exec();
+    const csvData1Object = csvData.map((doc) => doc.toObject());
+
+    csvData = csvData1Object;
 
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments(options);
