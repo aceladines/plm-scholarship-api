@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const { BlobServiceClient, BlobHttpHeaders } = require("@azure/storage-blob");
 const path = require("path");
+const { nanoid } = require("nanoid");
 
 const containerName = process.env.AZURE_CONTAINER_NAME;
 const blobServiceClient = BlobServiceClient.fromConnectionString(
@@ -12,10 +13,10 @@ const containerClient = blobServiceClient.getContainerClient(containerName);
 const fileName = [];
 const filePath = [];
 
-module.exports = uploadFiles = async (files) => {
+module.exports = uploadFiles = async (files, email) => {
   for (const file of files) {
-    const folderName = "jcdbolito2020@plm.edu.ph";
-    const blobName = `${folderName}/${Date.now()}-${path.basename(
+    const folderName = email;
+    const blobName = `${folderName}/${nanoid(16)}-${path.basename(
       file.originalname
     )}`;
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);

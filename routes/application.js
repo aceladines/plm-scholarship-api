@@ -3,6 +3,7 @@ const { celebrate, Joi, errors, Segments } = require("celebrate");
 const router = express.Router();
 const ApplicationForm = require("../models/application");
 const fileUpload = require("../utils/file-upload");
+const fileUpdate = require("../utils/file-update");
 const multer = require("multer");
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -82,11 +83,10 @@ router.post(
   },
   async (req, res) => {
     try {
-      console.log(req.body);
       req.body.dateApplied = new Date().toISOString();
 
       // Upload the files to Azure first to get the link of each file
-      const fileInfos = await fileUpload(req.files);
+      const fileInfos = await fileUpload(req.files, req.body.email);
 
       const files = {
         scholarshipForm: {
@@ -134,6 +134,94 @@ router.post(
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
+  }
+);
+
+router.put(
+  "/update",
+  upload.array("pdf", 10),
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      studentNum: Joi.string().trim().required(),
+      firstName: Joi.string().trim().required(),
+      middleName: Joi.string().trim().allow("").optional(),
+      lastName: Joi.string().trim().required(),
+      gender: Joi.string().trim().required(),
+      email: Joi.string().trim().email().required(),
+      college: Joi.string().trim().required(),
+      course: Joi.string().trim().required(),
+      year: Joi.number().required(),
+      mobileNum: Joi.number().required(),
+      birthdate: Joi.string().trim().required(),
+      householdIncome: Joi.number().required(),
+      currentGwa: Joi.number().required(),
+      applied: Joi.boolean().required(),
+      approvalStatus: Joi.string().trim().required(),
+      scholarshipForm: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      form137_138: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      IncomeTax: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      SnglParentID: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      CoR: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      CGM: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      ScholarshipLetter: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+      PlmID: Joi.object().keys({
+        fileName: Joi.string().trim(),
+        filePath: Joi.string().trim(),
+      }),
+    }),
+  }),
+  async (req, res) => {
+   try{
+     //Applicant information
+     const applicant = {
+       studentNum: req.body.studentNum,
+       firstName: req.body.firstName,
+       middleName: req.body.middleName,
+       lastName: req.body.lastName,
+       gender: req.body.gender,
+       college: req.body.college,
+       course: req.body.course,
+       year: req.body.year,
+       mobileNum: req.body.mobileNum,
+       birthdate: req.body.birthdate,
+       householdIncome: req.body.householdIncome,
+       currentGwa: req.body.currentGwa,
+     };
+     //Update the information of the user application
+     const updateInfo = await ApplicationForm.findOneAndUpdate(
+       { email: req.body.email },
+       { $set: applicant },
+       { new: true }
+     );
+
+     if (updateInfo) {
+       // Delete the files to be updated first
+       const updateFiles = await fileUpdate(req.body.email, req.files);
+     }
+   }catch(error){
+    return res.status(500).json({ error: error.message });
+   }
   }
 );
 
