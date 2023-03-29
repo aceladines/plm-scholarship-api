@@ -83,6 +83,7 @@ router.post(
   },
   async (req, res) => {
     try {
+      req.body.applied = true;
       req.body.dateApplied = new Date().toISOString();
 
       // Upload the files to Azure first to get the link of each file
@@ -192,36 +193,36 @@ router.put(
     }),
   }),
   async (req, res) => {
-   try{
-     //Applicant information
-     const applicant = {
-       studentNum: req.body.studentNum,
-       firstName: req.body.firstName,
-       middleName: req.body.middleName,
-       lastName: req.body.lastName,
-       gender: req.body.gender,
-       college: req.body.college,
-       course: req.body.course,
-       year: req.body.year,
-       mobileNum: req.body.mobileNum,
-       birthdate: req.body.birthdate,
-       householdIncome: req.body.householdIncome,
-       currentGwa: req.body.currentGwa,
-     };
-     //Update the information of the user application
-     const updateInfo = await ApplicationForm.findOneAndUpdate(
-       { email: req.body.email },
-       { $set: applicant },
-       { new: true }
-     );
+    try {
+      //Applicant information
+      const applicant = {
+        studentNum: req.body.studentNum,
+        firstName: req.body.firstName,
+        middleName: req.body.middleName,
+        lastName: req.body.lastName,
+        gender: req.body.gender,
+        college: req.body.college,
+        course: req.body.course,
+        year: req.body.year,
+        mobileNum: req.body.mobileNum,
+        birthdate: req.body.birthdate,
+        householdIncome: req.body.householdIncome,
+        currentGwa: req.body.currentGwa,
+      };
+      //Update the information of the user application
+      const updateInfo = await ApplicationForm.findOneAndUpdate(
+        { email: req.body.email },
+        { $set: applicant },
+        { new: true }
+      );
 
-     if (updateInfo) {
-       // Delete the files to be updated first
-       const updateFiles = await fileUpdate(req.body.email, req.files);
-     }
-   }catch(error){
-    return res.status(500).json({ error: error.message });
-   }
+      if (updateInfo) {
+        // Delete the files to be updated first
+        const updateFiles = await fileUpdate(req.body.email, req.files);
+      }
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 );
 
