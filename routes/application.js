@@ -219,6 +219,9 @@ router.put(
       if (updateInfo) {
         // Delete the files to be updated first
         const updateFiles = await fileUpdate(req.body.email, req.files);
+        res
+          .status(200)
+          .json({ message: "Update successful", updateInfo, updateFiles });
       }
     } catch (error) {
       return res.status(500).json({ error: error.message });
