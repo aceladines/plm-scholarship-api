@@ -69,19 +69,16 @@ router.get("/generate-csv", async (req, res) => {
   // Finalize the archive.
   archive.finalize();
 
-  // Write the compressed archive to a file named "output.zip"
-  const outputFilePath = path.join(__dirname, "output.zip");
-  const output = fs.createWriteStream(outputFilePath);
-  archive.pipe(output);
+  // Set the content type header to indicate that the response will contain a zip file
+  res.setHeader("Content-Type", "application/zip");
 
-  // Listen for the archive to finish writing to the file.
-  output.on("close", () => {
-    // Send a response to the client indicating that the file has been written.
-    res.send(`The compressed archive has been written to ${outputFilePath}`);
-  });
+  // Set the content disposition header to indicate that the response should be treated as an attachment
+  res.setHeader("Content-Disposition", "attachment; filename=output.zip");
 
-  // Log a message to indicate that the file has been written.
-  console.log(`The compressed archive is being written to ${outputFilePath}`);
+  // Pipe the compressed archive to the response object
+  archive.pipe(res);
+
+  res.json({ message: "The compressed archive has been generated." });
 });
 
 // Default

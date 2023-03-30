@@ -1,28 +1,4 @@
- // else {
-      //   const filter = {
-      //     "providerAndDates.providerName": toMove.provider,
-      //   };
+let a = "akolangtogago"
+let b = "gto"
 
-      //   const update = {
-      //     $addToSet: {
-      //       "providerAndDates.$.providerOpeningDate":
-      //         toMove.providerOpeningDate,
-      //     },
-      //   };
-
-      //   const options = { upsert: true };
-
-      //   const result = await providerOpeningDates.updateOne(
-      //     filter,
-      //     update,
-      //     options
-      //   );
-
-      //   if (result.upsertedCount > 0) {
-      //     console.log(
-      //       `Provider and provider opening date added to existing document!`
-      //     );
-      //   }
-      // }
-
-    
+console.log(a.includes(b))
