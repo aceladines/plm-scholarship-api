@@ -5,6 +5,7 @@ const mail = require("../../utils/mailer");
 
 router.post("/approve", async (req, res) => {
   const email = req.body.email;
+  const message = req.body.message;
 
   let gwaEquiv = 0;
   let incEquiv = 0;
@@ -59,6 +60,7 @@ router.post("/approve", async (req, res) => {
             let sendMail = {
               TO: email,
               option: 0,
+              message,
             };
 
             const mailInfo = await mail.sendEmail(sendMail);
