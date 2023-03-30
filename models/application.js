@@ -109,6 +109,9 @@ const applicationForm = new Schema({
     providerOpeningDate:{
         type: Date
     },
+    dateOfBecomingScholar:{
+        type: Date
+    },
     files: studentRegFormFilesSchema
 });
 
