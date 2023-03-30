@@ -25,7 +25,7 @@ module.exports = deleteFileWithText = async (email, files) => {
     }
 
     // Upload new files
-    fileUpload(files, email);
+    await fileUpload(files, email);
 
     return "Files updated";
   } catch (e) {

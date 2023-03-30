@@ -28,38 +28,6 @@ router.post(
       currentGwa: Joi.number().required(),
       applied: Joi.boolean().required(),
       approvalStatus: Joi.string().trim().required(),
-      scholarshipForm: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      form137_138: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      IncomeTax: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      SnglParentID: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      CoR: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      CGM: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      ScholarshipLetter: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      PlmID: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
     }),
   }),
   (req, res, next) => {
@@ -158,38 +126,6 @@ router.put(
       currentGwa: Joi.number().required(),
       applied: Joi.boolean().required(),
       approvalStatus: Joi.string().trim().required(),
-      scholarshipForm: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      form137_138: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      IncomeTax: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      SnglParentID: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      CoR: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      CGM: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      ScholarshipLetter: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
-      PlmID: Joi.object().keys({
-        fileName: Joi.string().trim(),
-        filePath: Joi.string().trim(),
-      }),
     }),
   }),
   async (req, res) => {
