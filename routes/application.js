@@ -114,7 +114,7 @@ router.put(
         birthdate: req.body.birthdate,
         householdIncome: req.body.householdIncome,
         currentGwa: req.body.currentGwa,
-        files: updateFiles,
+        ...(updateFiles.length > 0 && { files: updateFiles }),
       };
 
       //Update the information of the user application
