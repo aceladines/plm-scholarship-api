@@ -11,25 +11,25 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.post(
   "/",
   upload.array("pdf", 10),
-  // celebrate({
-  //   [Segments.BODY]: Joi.object().keys({
-  //     studentNum: Joi.string().trim().required(),
-  //     firstName: Joi.string().trim().required(),
-  //     middleName: Joi.string().trim().allow("").optional(),
-  //     lastName: Joi.string().trim().required(),
-  //     gender: Joi.string().trim().required(),
-  //     email: Joi.string().trim().email().required(),
-  //     college: Joi.string().trim().required(),
-  //     course: Joi.string().trim().required(),
-  //     year: Joi.number().required(),
-  //     mobileNum: Joi.number().required(),
-  //     birthdate: Joi.string().trim().required(),
-  //     householdIncome: Joi.number().required(),
-  //     currentGwa: Joi.number().required(),
-  //     applied: Joi.boolean().required(),
-  //     approvalStatus: Joi.string().trim().required(),
-  //   }),
-  // }),
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      studentNum: Joi.string().trim().required(),
+      firstName: Joi.string().trim().required(),
+      middleName: Joi.string().trim().allow("").optional(),
+      lastName: Joi.string().trim().required(),
+      gender: Joi.string().trim().required(),
+      email: Joi.string().trim().email().required(),
+      college: Joi.string().trim().required(),
+      course: Joi.string().trim().required(),
+      year: Joi.number().required(),
+      mobileNum: Joi.number().required(),
+      birthdate: Joi.string().trim().required(),
+      householdIncome: Joi.number().required(),
+      currentGwa: Joi.number().required(),
+      applied: Joi.boolean().required(),
+      approvalStatus: Joi.string().trim(),
+    }),
+  }),
   (req, res, next) => {
     // Check if the email || student number already in use, if yes return credential error
     ApplicationForm.findOne({ email: req.body.email })
@@ -54,7 +54,6 @@ router.post(
       req.body.applied = true;
       req.body.dateApplied = new Date().toISOString();
 
-      console.log("tae");
       // Upload the files to Azure first to get the link of each file
       const fileInfos = await fileUpload(req.files, req.body.email);
 
@@ -79,21 +78,21 @@ router.put(
   upload.array("pdf", 10),
   celebrate({
     [Segments.BODY]: Joi.object().keys({
-      studentNum: Joi.string().trim().required(),
-      firstName: Joi.string().trim().required(),
+      studentNum: Joi.string().trim(),
+      firstName: Joi.string().trim(),
       middleName: Joi.string().trim().allow("").optional(),
-      lastName: Joi.string().trim().required(),
-      gender: Joi.string().trim().required(),
+      lastName: Joi.string().trim(),
+      gender: Joi.string().trim(),
       email: Joi.string().trim().email().required(),
-      college: Joi.string().trim().required(),
-      course: Joi.string().trim().required(),
-      year: Joi.number().required(),
-      mobileNum: Joi.number().required(),
-      birthdate: Joi.string().trim().required(),
-      householdIncome: Joi.number().required(),
-      currentGwa: Joi.number().required(),
-      applied: Joi.boolean().required(),
-      approvalStatus: Joi.string().trim().required(),
+      college: Joi.string().trim(),
+      course: Joi.string().trim(),
+      year: Joi.number(),
+      mobileNum: Joi.number(),
+      birthdate: Joi.string().trim(),
+      householdIncome: Joi.number(),
+      currentGwa: Joi.number(),
+      applied: Joi.boolean(),
+      approvalStatus: Joi.string().trim(),
     }),
   }),
   async (req, res) => {

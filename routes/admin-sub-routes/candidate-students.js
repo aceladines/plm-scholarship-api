@@ -10,6 +10,27 @@ provider = require("../../models/provider");
 
 let csvData;
 
+router.post("/toScholar", async (req, res) => {
+  const email = req.body.email;
+
+  try {
+    const moveToScholar = await applicantsInfo.findOneAndUpdate(
+      { email },
+      {
+        approvalStatus: "APPROVED",
+        dateOfBecomingScholar: new Date().toISOString(),
+      },
+      { new: true }
+    );
+
+    if (moveToScholar) {
+      res.status(200).json({ message: "Applicant became a scholar!" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get("/generate-csv", async (req, res) => {
   const document1 = [],
     document2 = [],
