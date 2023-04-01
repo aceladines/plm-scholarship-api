@@ -6,9 +6,9 @@ const provider = require("../../models/provider");
 router.put("/move", async (req, res) => {
   // Dummy Field
   const toMove = {
-    studentNumber: [3],
-    provider: "Robinsons-Scholarship",
-    providerOpeningDate: "2023-03-26",
+    studentNumber: [2],
+    provider: "Robinsons-Scholarships",
+    providerOpeningDate: "2023-03-28",
   };
 
   try {
@@ -30,33 +30,31 @@ router.put("/move", async (req, res) => {
 
     if (movedStudents !== null) {
       const existingProvider = await provider.findOne({
-        "providerAndDates.providerName": toMove.provider,
+        providerName: toMove.provider,
       });
 
       if (existingProvider) {
-        // If the provider exists, append the new opening date to its array
-        await provider.findOneAndUpdate(
-          {
-            "providerAndDates.providerName": toMove.provider,
-          },
-          {
-            $push: {
-              "providerAndDates.$.providerOpeningDate": {
-                date: toMove.providerOpeningDate,
-              },
-            },
-          }
+        // If the provider exists, check if the opening date already exists in the array
+        const openingDateExists = existingProvider.openingDates.some(
+          (openingDate) => openingDate.date === toMove.providerOpeningDate
         );
-        console.log("New provider opening date added!");
+
+        if (!openingDateExists) {
+          // If the opening date doesn't exist, append it to the array
+          existingProvider.openingDates.push({
+            date: toMove.providerOpeningDate,
+          });
+          await existingProvider.save();
+          console.log("New provider opening date added!");
+        } else {
+          console.log("Provider opening date already exists!");
+        }
       } else {
         // If the provider doesn't exist, create a new provider document with the opening date
         const newProvider = new provider({
-          providerAndDates: [
-            {
-              providerName: toMove.provider,
-              providerOpeningDate: [{ date: toMove.providerOpeningDate }],
-            },
-          ],
+          providerName: toMove.provider,
+          openingDates: [{ date: toMove.providerOpeningDate }],
+          scholarsDates: [],
         });
         await newProvider.save();
         console.log("New provider and provider opening date added!");

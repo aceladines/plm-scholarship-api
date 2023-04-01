@@ -57,8 +57,6 @@ router.post(
       // Upload the files to Azure first to get the link of each file
       const fileInfos = await fileUpload(req.files, req.body.email);
 
-      console.log(fileInfos);
-
       req.body.files = fileInfos;
 
       // Upload data to MongoDB
@@ -128,6 +126,8 @@ router.put(
         res
           .status(200)
           .json({ message: "Update successful", updateInfo, updateFiles });
+      } else {
+        res.status(400).json({ message: "Update failed" });
       }
     } catch (error) {
       return res.status(500).json({ error: error.message });

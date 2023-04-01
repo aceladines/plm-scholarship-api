@@ -106,19 +106,14 @@ router.get("/generate-csv", async (req, res) => {
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
-  console.log(initialOption);
 
   //Initial options
-  let initialOptions = {
-    provider: initialOption.providerAndDates[0].providerName,
-    providerOpeningDate:
-      initialOption.providerAndDates[0].providerOpeningDate[
-        initialOption.providerAndDates[0].providerOpeningDate.length - 1
-      ].date,
-  };
 
-  console.log("Initial Option: ");
-  console.log(initialOptions);
+  let initialOptions = {
+    provider: initialOption.providerName,
+    providerOpeningDate:
+      initialOption.openingDates[initialOption.openingDates.length - 1].date,
+  };
 
   // Dummy options
   let options = {
@@ -150,8 +145,8 @@ router.get("/*", async (req, res) => {
     };
 
     csvData = await applicantsInfo.find(options).select(selectedFields).exec();
-    const csvData1Object = csvData.map((doc) => doc.toObject());
 
+    const csvData1Object = csvData.map((doc) => doc.toObject());
     csvData = csvData1Object;
 
     // get total documents in the Posts collection
