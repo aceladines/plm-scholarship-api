@@ -68,7 +68,7 @@ module.exports = uploadFiles = async (files, email) => {
   }
 
   for (file of fileName) {
-    if (file.includes("ScholarshipForm")) {
+    if (file.includes("scholarshipForm")) {
       filesObj.scholarshipForm.fileName = file;
     } else if (file.includes("form137_138")) {
       filesObj.form137_138.fileName = file;

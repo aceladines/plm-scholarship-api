@@ -70,11 +70,15 @@ router.put("/move", async (req, res) => {
 });
 
 router.get("/*", async (req, res) => {
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
   try {
     // execute query with page and limit values
     const studentInfos = await applicantsInfo
       .find({ approvalStatus: "APPROVED" })
       .sort({ totalScore: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
       .exec();
 
     // get total documents in the Posts collection
@@ -83,7 +87,13 @@ router.get("/*", async (req, res) => {
     });
 
     if (studentInfos.length === 0) {
-      res.status(200).json({ message: "No data" });
+      res.status(200).json({
+        studentInfos,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        limit,
+        totalCount: count,
+      });
     } else if (studentInfos.length === 1) {
       await applicantsInfo.findOneAndUpdate(
         { studentNum: studentInfos[0].studentNum },
@@ -93,6 +103,9 @@ router.get("/*", async (req, res) => {
       // return response with posts, total pages, and current page
       res.status(200).json({
         studentInfos,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        limit,
         totalCount: count,
       });
     } else {
@@ -189,6 +202,9 @@ router.get("/*", async (req, res) => {
       // return response with posts, total pages, and current page
       res.status(200).json({
         studentInfos,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page,
+        limit,
         totalCount: count,
       });
     }
