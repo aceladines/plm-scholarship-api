@@ -30,24 +30,30 @@ router.post(
       approvalStatus: Joi.string().trim(),
     }),
   }),
-  (req, res, next) => {
-    // Check if the email || student number already in use, if yes return credential error
-    ApplicationForm.findOne({ email: req.body.email })
-      .then((emailExist) => {
-        if (emailExist) {
-          throw new Error("Email already in use");
-        }
-        return ApplicationForm.findOne({ studentNum: req.body.studentNum });
-      })
-      .then((studentNumExist) => {
-        if (studentNumExist) {
-          throw new Error("Student number already in use");
-        }
-        next();
-      })
-      .catch((error) => {
-        return res.status(400).json({ error: error.message });
-      });
+  async (req, res, next) => {
+    try {
+      const { email, studentNum } = req.body;
+
+      // Check if the email or student number is already in use
+      const [emailExist, studentNumExist] = await Promise.all([
+        ApplicationForm.findOne({ email }),
+        ApplicationForm.findOne({ studentNum }),
+      ]);
+
+      if (emailExist) {
+        throw new Error("Email already in use");
+      }
+
+      if (studentNumExist) {
+        throw new Error("Student number already in use");
+      }
+
+      // If neither email nor student number is in use, proceed to the next middleware
+      next();
+    } catch (error) {
+      // Return a 400 error if an error occurred
+      res.status(400).json({ error: error.message });
+    }
   },
   async (req, res) => {
     try {
@@ -95,9 +101,6 @@ router.put(
   }),
   async (req, res) => {
     try {
-      //Updated fileInfos
-      const updateFiles = await fileUpdate(req.body.email, req.files);
-
       //Applicant information
       const applicant = {
         studentNum: req.body.studentNum,
@@ -112,23 +115,33 @@ router.put(
         birthdate: req.body.birthdate,
         householdIncome: req.body.householdIncome,
         currentGwa: req.body.currentGwa,
-        ...(updateFiles.length > 0 && { files: updateFiles }),
       };
+
+      let updateFiles = {};
+
+      if (req.files) {
+        //Updated fileInfos
+        updateFiles = await fileUpdate(
+          req.body.email,
+          req.files,
+          req.body.fileToDelete
+        );
+
+        if (!updateFiles) {
+          res.status(400).json({ error: "File upload failed" });
+        }
+
+        applicant.files = updateFiles;
+      }
 
       //Update the information of the user application
       const updateInfo = await ApplicationForm.findOneAndUpdate(
         { email: req.body.email },
         { $set: applicant },
-        { new: true }
+        { new: true, overwrite: true }
       );
 
-      if (updateInfo) {
-        res
-          .status(200)
-          .json({ message: "Update successful", updateInfo, updateFiles });
-      } else {
-        res.status(400).json({ message: "Update failed" });
-      }
+      res.status(200).json({ message: "Update successful!" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }

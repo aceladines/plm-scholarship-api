@@ -1,6 +1,6 @@
 const express = require("express");
 const app = express();
-const { BlobServiceClient, BlobHttpHeaders } = require("@azure/storage-blob");
+const { BlobServiceClient } = require("@azure/storage-blob");
 const path = require("path");
 const fileUpload = require("./file-upload");
 
@@ -11,14 +11,22 @@ const blobServiceClient = BlobServiceClient.fromConnectionString(
 const containerClient = blobServiceClient.getContainerClient(containerName);
 
 // This will delete the files that matches the given string
-module.exports = deleteFileWithText = async (email, files) => {
+module.exports = deleteFileWithText = async (email, files, fileToDelete) => {
   try {
     for await (const blob of containerClient.listBlobsFlat()) {
       for (const file of files) {
         if (
           blob.name.includes(email) &&
-          blob.name.includes(file.originalName)
+          blob.name.includes(file.originalname)
         ) {
+          await containerClient.deleteBlob(blob.name);
+        }
+      }
+    }
+
+    for await (const blob of containerClient.listBlobsFlat()) {
+      for (const file of fileToDelete) {
+        if (blob.name.includes(email) && blob.name.includes(file)) {
           await containerClient.deleteBlob(blob.name);
         }
       }

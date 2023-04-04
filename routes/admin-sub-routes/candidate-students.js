@@ -10,14 +10,13 @@ provider = require("../../models/provider");
 
 let csvData;
 
-router.post("/toScholar", async (req, res) => {
+router.post("/to-scholar", async (req, res) => {
   const email = req.body.email;
 
   try {
     const moveToScholar = await applicantsInfo.findOneAndUpdate(
       { email },
       {
-        approvalStatus: "APPROVED",
         dateOfBecomingScholar: new Date().toISOString(),
       },
       { new: true }
@@ -25,6 +24,8 @@ router.post("/toScholar", async (req, res) => {
 
     if (moveToScholar) {
       res.status(200).json({ message: "Applicant became a scholar!" });
+    } else {
+      res.status(400).json({ message: "Something went wrong!" });
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -107,20 +108,22 @@ router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
 
-  //Initial options
+  let options = {};
 
-  let initialOptions = {
-    provider: initialOption.providerName,
-    providerOpeningDate:
-      initialOption.openingDates[initialOption.openingDates.length - 1].date,
-  };
-
-  // Dummy options
-  let options = {
-    approvalStatus: "APPROVED",
-    scholarshipProvider: null ?? initialOptions.provider,
-    providerOpeningDate: null ?? initialOptions.providerOpeningDate,
-  };
+  if (initialOption) {
+    options = {
+      approvalStatus: "APPROVED",
+      provider: initialOption.providerName,
+      providerOpeningDate:
+        initialOption.openingDates[initialOption.openingDates.length - 1].date,
+    };
+  } else {
+    options = {
+      approvalStatus: "APPROVED",
+      scholarshipProvider: req.params.provider,
+      providerOpeningDate: req.params.openingDate,
+    };
+  }
 
   //Get provider names and provider opening dates
   const providerNamesAndOpenings = await provider.find().exec();

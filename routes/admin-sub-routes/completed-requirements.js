@@ -5,15 +5,21 @@ const provider = require("../../models/provider");
 
 router.put("/move", async (req, res) => {
   // Dummy Field
-  const toMove = {
-    studentNumber: [2],
-    provider: "Robinsons-Scholarships",
-    providerOpeningDate: "2023-03-28",
-  };
+  // const toMove = {
+  //   studentNumber: [2],
+  //   provider: "Robinsons-Scholarships",
+  //   providerOpeningDate: "2023-03-28",
+  // };
+
+  const toMove = req.body;
 
   try {
     //Update the status of each moved student into 'APPROVED'
     let movedStudents;
+
+    if (Object.keys(toMove).length === 0) {
+      res.status(400).json({ message: "No student/s to move!" });
+    }
 
     for (const student of toMove.studentNumber) {
       movedStudents = await applicantsInfo.findOneAndUpdate(
@@ -28,42 +34,38 @@ router.put("/move", async (req, res) => {
       );
     }
 
-    if (movedStudents !== null) {
-      const existingProvider = await provider.findOne({
-        providerName: toMove.provider,
-      });
+    const existingProvider = await provider.findOne({
+      providerName: toMove.provider,
+    });
 
-      if (existingProvider) {
-        // If the provider exists, check if the opening date already exists in the array
-        const openingDateExists = existingProvider.openingDates.some(
-          (openingDate) => openingDate.date === toMove.providerOpeningDate
-        );
+    if (existingProvider) {
+      // If the provider exists, check if the opening date already exists in the array
+      const openingDateExists = existingProvider.openingDates.some(
+        (openingDate) => openingDate.date === toMove.providerOpeningDate
+      );
 
-        if (!openingDateExists) {
-          // If the opening date doesn't exist, append it to the array
-          existingProvider.openingDates.push({
-            date: toMove.providerOpeningDate,
-          });
-          await existingProvider.save();
-          console.log("New provider opening date added!");
-        } else {
-          console.log("Provider opening date already exists!");
-        }
-      } else {
-        // If the provider doesn't exist, create a new provider document with the opening date
-        const newProvider = new provider({
-          providerName: toMove.provider,
-          openingDates: [{ date: toMove.providerOpeningDate }],
-          scholarsDates: [],
+      if (!openingDateExists) {
+        // If the opening date doesn't exist, append it to the array
+        existingProvider.openingDates.push({
+          date: toMove.providerOpeningDate,
         });
-        await newProvider.save();
-        console.log("New provider and provider opening date added!");
+        await existingProvider.save();
+        console.log("New provider opening date added!");
+      } else {
+        console.log("Provider opening date already exists!");
       }
-
-      res.status(200).json({ message: "Successfully moved student/s!" });
     } else {
-      res.status(400).json({ message: "No student/s to move!" });
+      // If the provider doesn't exist, create a new provider document with the opening date
+      const newProvider = new provider({
+        providerName: toMove.provider,
+        openingDates: [{ date: toMove.providerOpeningDate }],
+        scholarsDates: [],
+      });
+      await newProvider.save();
+      console.log("New provider and provider opening date added!");
     }
+
+    res.status(200).json({ message: "Successfully moved student/s!" });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
