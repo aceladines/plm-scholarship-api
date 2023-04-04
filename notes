@@ -1,4 +1,0 @@
-let a = "akolangtogago"
-let b = "gto"
-
-console.log(a.includes(b))
