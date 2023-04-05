@@ -76,7 +76,7 @@ router.get("/*", async (req, res) => {
   const limit = req.query.limit || 10;
   try {
     // execute query with page and limit values
-    const studentInfos = await applicantsInfo
+    const applicants = await applicantsInfo
       .find({ approvalStatus: "APPROVED" })
       .sort({ totalScore: -1 })
       .limit(limit * 1)
@@ -88,23 +88,23 @@ router.get("/*", async (req, res) => {
       approvalStatus: "APPROVED",
     });
 
-    if (studentInfos.length === 0) {
+    if (applicants.length === 0) {
       res.status(200).json({
-        studentInfos,
+        applicants,
         totalPages: Math.ceil(count / limit),
         currentPage: page,
         limit,
         totalCount: count,
       });
-    } else if (studentInfos.length === 1) {
+    } else if (applicants.length === 1) {
       await applicantsInfo.findOneAndUpdate(
-        { studentNum: studentInfos[0].studentNum },
+        { studentNum: applicants[0].studentNum },
         { rank: 1 }
       );
 
       // return response with posts, total pages, and current page
       res.status(200).json({
-        studentInfos,
+        applicants,
         totalPages: Math.ceil(count / limit),
         currentPage: page,
         limit,
@@ -118,8 +118,8 @@ router.get("/*", async (req, res) => {
       let totalScoreArr = [];
 
       // Push the totalScore into 'totalScoreArr'
-      for (let i = 0; i < studentInfos.length; i++) {
-        totalScoreArr.push(studentInfos[i].totalScore);
+      for (let i = 0; i < applicants.length; i++) {
+        totalScoreArr.push(applicants[i].totalScore);
       }
 
       // Making a set from 'totalScoreArr'
@@ -164,22 +164,20 @@ router.get("/*", async (req, res) => {
         myMap.set(distinctElems[i], sortedOccuranceArr[i]);
       }
 
-      for (let i = 0; i < studentInfos.length - 1; i++) {
+      for (let i = 0; i < applicants.length - 1; i++) {
         // Main logic for ranking
-        if (studentInfos[i].totalScore === studentInfos[i + 1].totalScore) {
+        if (applicants[i].totalScore === applicants[i + 1].totalScore) {
           sum = sum + indexFlag++;
 
-          if (i === studentInfos.length - 2) {
-            rank = sum / myMap.get(studentInfos[i].totalScore);
+          if (i === applicants.length - 2) {
+            rank = sum / myMap.get(applicants[i].totalScore);
             rankArr.push(rank);
           }
-        } else if (
-          studentInfos[i].totalScore !== studentInfos[i + 1].totalScore
-        ) {
-          rank = sum / myMap.get(studentInfos[i].totalScore);
+        } else if (applicants[i].totalScore !== applicants[i + 1].totalScore) {
+          rank = sum / myMap.get(applicants[i].totalScore);
           rankArr.push(rank);
           sum = indexFlag++;
-          if (i === studentInfos.length - 2) {
+          if (i === applicants.length - 2) {
             rank = --indexFlag;
             rankArr.push(rank);
           }
@@ -194,16 +192,16 @@ router.get("/*", async (req, res) => {
         }
       }
 
-      for (let i = 0; i < studentInfos.length; i++) {
+      for (let i = 0; i < applicants.length; i++) {
         await applicantsInfo.findOneAndUpdate(
-          { studentNum: studentInfos[i].studentNum },
+          { studentNum: applicants[i].studentNum },
           { rank: parseFloat(finalRanking[i]) }
         );
       }
 
       // return response with posts, total pages, and current page
       res.status(200).json({
-        studentInfos,
+        applicants,
         totalPages: Math.ceil(count / limit),
         currentPage: page,
         limit,

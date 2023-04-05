@@ -4,7 +4,9 @@ const router = express.Router();
 const ApplicationForm = require("../models/application");
 const fileUpload = require("../utils/file-upload");
 const fileUpdate = require("../utils/file-update");
+const fileDelete = require("../utils/file-delete");
 const multer = require("multer");
+const merge = require("lodash.merge");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -97,11 +99,12 @@ router.put(
       currentGwa: Joi.number(),
       applied: Joi.boolean(),
       approvalStatus: Joi.string().trim(),
+      filesToDelete: Joi.string().allow("").optional(),
     }),
   }),
   async (req, res) => {
     try {
-      //Applicant information
+      // Applicant information
       const applicant = {
         studentNum: req.body.studentNum,
         firstName: req.body.firstName,
@@ -117,31 +120,48 @@ router.put(
         currentGwa: req.body.currentGwa,
       };
 
-      let updateFiles = {};
+      let updatedFiles = {};
+
+      if (req.body.filesToDelete) {
+        //Delete files
+        updatedDeletedFiles = await fileDelete(
+          req.body.email,
+          JSON.parse(req.body.filesToDelete)
+        );
+
+        if (!updatedDeletedFiles) {
+          res.status(400).json({ error: "File deletion failed" });
+        }
+      }
 
       if (req.files) {
         //Updated fileInfos
-        updateFiles = await fileUpdate(
-          req.body.email,
-          req.files,
-          req.body.fileToDelete
-        );
+        updatedFiles = await fileUpdate(req.body.email, req.files);
 
-        if (!updateFiles) {
+        if (!updatedFiles) {
           res.status(400).json({ error: "File upload failed" });
         }
-
-        applicant.files = updateFiles;
       }
 
+      //Retrieve the current files object from the database
+      const currentFiles = (
+        await ApplicationForm.findOne({ email: req.body.email }, { files: 1 })
+      ).files.toObject({
+        getters: true,
+        virtuals: false,
+      });
+
+      //Merge the current files object with the updated files object from the request body
+      const mergedFiles = Object.assign({}, currentFiles, updatedFiles);
+
       //Update the information of the user application
-      const updateInfo = await ApplicationForm.findOneAndUpdate(
+      let update = await ApplicationForm.findOneAndUpdate(
         { email: req.body.email },
-        { $set: applicant },
-        { new: true, overwrite: true }
+        { $set: { ...applicant, files: mergedFiles } },
+        { new: true, upsert: true }
       );
 
-      res.status(200).json({ message: "Update successful!" });
+      if (update) res.status(200).json({ message: "Update successful!" });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
