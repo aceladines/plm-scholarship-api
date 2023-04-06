@@ -1,31 +1,31 @@
 const express = require("express");
 const router = express.Router();
 applicantsInfo = require("../../models/application");
- 
+
 // Default
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
   console.log(initialOption);
 
-  //Initial options
-  let initialOptions = {
-    provider: initialOption.providerAndDates[0].providerName,
-    providerOpeningDate:
-      initialOption.providerAndDates[0].providerOpeningDate[
-        initialOption.providerAndDates[0].providerOpeningDate.length - 1
-      ].date,
-  };
-
-  console.log("Initial Option: ");
-  console.log(initialOptions);
-
-  // Dummy options
-  let options = {
-    approvalStatus: "APPROVED",
-    scholarshipProvider: null ?? initialOptions.provider,
-    providerOpeningDate: null ?? initialOptions.providerOpeningDate,
-  };
+  let options = {};
+  if (initialOption) {
+    options = {
+      approvalStatus: "APPROVED",
+      provider: initialOption.providerName,
+      becomingScholarDates:
+        initialOption.becomingScholarDates[
+          initialOption.becomingScholarDates.length - 1
+        ].date,
+    };
+  }
+  else{
+    options = {
+      approvalStatus: "APPROVED",
+      provider: req.params.provider,
+      becomingScholarDates: req.params.openingDate,
+    };
+  }
 
   //Get provider names and provider opening dates
   const providerNamesAndOpenings = await provider.find().exec();

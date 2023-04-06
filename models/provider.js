@@ -35,7 +35,7 @@ let provider = new Schema({
       },
     },
   ],
-  scholarsDates: [
+  becomingScholarDates: [
     {
       date: {
         type: String,
