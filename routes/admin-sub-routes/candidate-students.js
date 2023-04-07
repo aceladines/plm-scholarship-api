@@ -1,9 +1,6 @@
 const express = require("express");
 const { AsyncParser } = require("@json2csv/node");
 const archiver = require("archiver");
-const { promisify } = require("util");
-const path = require("path");
-const fs = require("fs");
 const router = express.Router();
 applicantsInfo = require("../../models/application");
 provider = require("../../models/provider");

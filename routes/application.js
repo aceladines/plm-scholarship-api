@@ -6,7 +6,6 @@ const fileUpload = require("../utils/file-upload");
 const fileUpdate = require("../utils/file-update");
 const fileDelete = require("../utils/file-delete");
 const multer = require("multer");
-const merge = require("lodash.merge");
 
 const upload = multer({ storage: multer.memoryStorage() });
 
