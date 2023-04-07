@@ -18,6 +18,7 @@ router.post("/to-scholar", async (req, res) => {
       { email },
       {
         dateOfBecomingScholar: new Date().toISOString(),
+        approvalStatus: "SCHOLAR",
       },
       { new: true }
     );

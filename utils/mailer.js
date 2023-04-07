@@ -21,34 +21,135 @@ module.exports.sendEmail = async function (params) {
     {
       subject: "Scholarship Approved!",
       html: `
-            <div class="approved" style=" background-color: #4CAF50;
-              color: white;
-              padding: 16px;
-              font-size: 16px;
-              text-align: center;
-              border-radius: 5px;
-              box-shadow: 0px 0px 10px #888888;">
-            <h1 style="margin-top: 0;">Congratulations!</h1>
-            <p style="margin-bottom: 10px; font-size: 14px;">Dear ${params.TO}</p>
-            <p style="margin-bottom: 10px; font-size: 14px;">We are pleased to inform you that your scholarship application has been approved. Congratulations on this achievement! We are excited to provide you with the financial support you need to continue your education.</p>
-            <p style="margin-bottom: 10px; font-size: 14px;">Please let us know if you have any questions or concerns.</p>
-            <p style="margin-bottom: 10px; font-size: 14px;">Thank you for your interest in our program and for your hard work in applying.</p>
-            <p style="margin-bottom: 10px; font-size: 14px;">Best regards,</p>
-            <p style="margin-bottom: 10px; font-size: 14px;">OSDS</p>
-            ${params.message}
-            </div>`,
+            <body
+        style="
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 0.5rem;
+        "
+    >
+        <div style="margin: auto; max-width: 50rem">
+            <img
+                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                alt=""
+                style="width: 100%; max-width: 20rem"
+            />
+            <div
+                style="
+                    background-color: #2b9949;
+                    border-radius: 0.5rem;
+                    padding: 2rem;
+                "
+            >
+                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
+                <h2 style="font-size: 1.5rem">
+                    Congratulations! Your scholarship application has been
+                    <span style="text-decoration: underline">approved!</span>
+                </h2>
+                <p style="font-size: 1rem">
+                   ${params.message}
+                </p>
+                <p>Please let us know if you have any questions or concerns.</p>
+                <p>Best regards, OSDS</p>
+            </div>
+        </div>
+    </body>`,
     },
     {
       subject: "Scholarship Declined!",
-      h2: "Thank you for trying to apply for scholarship.",
-      h4: "There are other programs to help you, dont be sad!",
-      message: params.message,
+      html: `<body
+        style="
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 0.5rem;
+        "
+    >
+        <div style="margin: auto; max-width: 50rem">
+            <img
+                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                alt=""
+                style="width: 100%; max-width: 20rem"
+            />
+            <div
+                style="
+                    background-color: #a92b22;
+                    border-radius: 0.5rem;
+                    padding: 2rem;
+                "
+            >
+                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
+                <h2 style="font-size: 1.5rem">
+                    Your scholarship application has been
+                    <span style="text-decoration: underline">disapproved!</span>
+                </h2>
+                <p>
+                    We regret to inform you that your scholarship application
+                    has been declined. We understand that this may be
+                    disappointing news and we apologize for any inconvenience
+                    this may cause.
+                </p>
+                <p>
+                    ${params.message}
+                </p>
+                <p>
+                    Thank you for your interest in our program and for your hard
+                    work in applying. We encourage you to reapply in the future
+                    or explore other financial aid opportunities.
+                </p>
+                <p>
+                    If you have any questions or concerns, please do not
+                    hesitate to reach out to us.
+                </p>
+                <p>Best regards, OSDS</p>
+            </div>
+        </div>
+    </body>`,
     },
     {
       subject: "File/s Resubmission",
-      h2: "You are required to resubmit the following files.",
-      h4: "Failure to do so will result in invalidated application.",
-      message: params.message,
+      html: `<body
+        style="
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            padding: 0.5rem;
+        "
+    >
+        <div style="margin: auto; max-width: 50rem">
+            <img
+                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                alt=""
+                style="width: 100%; max-width: 20rem"
+            />
+            <div
+                style="
+                    background-color: #cf8e27;
+                    border-radius: 0.5rem;
+                    padding: 2rem;
+                "
+            >
+                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
+                <h2 style="font-size: 1.5rem">
+                    Your scholarship application has been subjected to
+                    <span style="text-decoration: underline"
+                        >resubmission!</span
+                    >
+                </h2>
+                <p>
+                    ${params.message}
+                </p>
+                <p>
+                    Please resubmit your application with the correct
+                    information as soon as possible to prevent the termination
+                    of your application.
+                </p>
+                <p>
+                    If you have any questions or concerns, please do not
+                    hesitate to reach out to us.
+                </p>
+                <p>Best regards, OSDS</p>
+            </div>
+        </div>
+    </body>`,
     },
   ];
 
