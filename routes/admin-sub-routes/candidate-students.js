@@ -33,9 +33,9 @@ router.post("/to-scholar", async (req, res) => {
 });
 
 router.get("/generate-csv", async (req, res) => {
-  const document1 = [],
-    document2 = [],
-    document3 = [];
+  const document1 = [];
+  const document2 = [];
+  const document3 = [];
 
   for (const data of csvData) {
     document1.push({
@@ -61,6 +61,7 @@ router.get("/generate-csv", async (req, res) => {
       Rank: data.rank,
     });
   }
+
   csvData.map((data, index) => {
     document3.push({
       No: index + 1,
@@ -88,8 +89,12 @@ router.get("/generate-csv", async (req, res) => {
   archive.append(csv2, { name: "file2.csv" });
   archive.append(csv3, { name: "file3.csv" });
 
-  // Finalize the archive.
-  archive.finalize();
+  // Wrap archive.finalize() in a Promise
+  const finalizePromise = new Promise((resolve, reject) => {
+    archive.finalize();
+    archive.on("finish", resolve);
+    archive.on("error", reject);
+  });
 
   // Set the content type header to indicate that the response will contain a zip file
   res.setHeader("Content-Type", "application/zip");
@@ -100,7 +105,14 @@ router.get("/generate-csv", async (req, res) => {
   // Pipe the compressed archive to the response object
   archive.pipe(res);
 
-  res.json({ message: "The compressed archive has been generated." });
+  try {
+    // Wait for the archive to finish writing before sending the response
+    await finalizePromise;
+    res.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate CSV files." });
+  }
 });
 
 // Default
