@@ -6,22 +6,20 @@ applicantsInfo = require("../../models/application");
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
-  console.log(initialOption);
 
   let options = {};
   if (initialOption) {
     options = {
-      approvalStatus: "APPROVED",
+      approvalStatus: "SCHOLAR",
       provider: initialOption.providerName,
       becomingScholarDates:
         initialOption.becomingScholarDates[
           initialOption.becomingScholarDates.length - 1
         ].date,
     };
-  }
-  else{
+  } else {
     options = {
-      approvalStatus: "APPROVED",
+      approvalStatus: "SCHOLAR",
       provider: req.params.provider,
       becomingScholarDates: req.params.openingDate,
     };
@@ -41,18 +39,7 @@ router.get("/*", async (req, res) => {
       .find(options)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .exec();
-
-    const selectedFields = {
-      _id: 0,
-      _v: 0,
-      files: 0,
-    };
-
-    csvData = await applicantsInfo.find(options).select(selectedFields).exec();
-    const csvData1Object = csvData.map((doc) => doc.toObject());
-
-    csvData = csvData1Object;
+      .exec();  
 
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments(options);

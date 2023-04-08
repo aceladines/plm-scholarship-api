@@ -21,7 +21,7 @@ module.exports.sendEmail = async function (params) {
     {
       subject: "Scholarship Approved!",
       html: `
-            <body
+            <div
         style="
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
@@ -53,11 +53,11 @@ module.exports.sendEmail = async function (params) {
                 <p>Best regards, OSDS</p>
             </div>
         </div>
-    </body>`,
+    </div>`,
     },
     {
       subject: "Scholarship Declined!",
-      html: `<body
+      html: `<div
         style="
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
@@ -103,11 +103,11 @@ module.exports.sendEmail = async function (params) {
                 <p>Best regards, OSDS</p>
             </div>
         </div>
-    </body>`,
+    </div>`,
     },
     {
       subject: "File/s Resubmission",
-      html: `<body
+      html: `<div
         style="
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             color: white;
@@ -149,7 +149,7 @@ module.exports.sendEmail = async function (params) {
                 <p>Best regards, OSDS</p>
             </div>
         </div>
-    </body>`,
+    </div>`,
     },
   ];
 
