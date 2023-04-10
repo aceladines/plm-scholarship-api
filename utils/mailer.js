@@ -22,134 +22,251 @@ module.exports.sendEmail = async function (params) {
       subject: "Scholarship Approved!",
       html: `
             <div
-        style="
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 0.5rem;
-        "
-    >
-        <div style="margin: auto; max-width: 50rem">
+            style="
+                margin: auto;
+                max-width: 50rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: black;
+                padding: 1rem;
+                background-color: #f3f3f3;
+                border-radius: 1rem;
+            "
+        >
             <img
-                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091507/plm-logo_tbsnsa.png"
                 alt=""
-                style="width: 100%; max-width: 20rem"
+                style="width: 100%; max-width: 20rem; margin-bottom: 1rem"
             />
             <div
                 style="
-                    background-color: #2b9949;
                     border-radius: 0.5rem;
-                    padding: 2rem;
+                    overflow: hidden;
+                    background-color: white;
+                    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
                 "
             >
-                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
-                <h2 style="font-size: 1.5rem">
-                    Congratulations! Your scholarship application has been
-                    <span style="text-decoration: underline">approved!</span>
-                </h2>
-                <p style="font-size: 1rem">
-                   ${params.message}
-                </p>
-                <p>Please let us know if you have any questions or concerns.</p>
-                <p>Best regards, OSDS</p>
+                <div
+                    style="
+                        background-image: url('https://res.cloudinary.com/dmxftgfzc/image/upload/v1681092968/plm-background_svwks7.jpg');
+                        background-size: cover;
+                        background-position: center;
+                        width: 100%;
+                        height: 15rem;
+                    "
+                ></div>
+                <div style="padding: 1rem; display: grid">
+                    <div
+                        style="
+                            text-transform: uppercase;
+                            font-weight: bold;
+                            font-size: 1.5rem;
+                            color: #2fa84f;
+                            display: flex;
+                            align-items: center;
+                            border: 5px solid #2fa84f;
+                            border-radius: 50rem;
+                            padding: 0.5rem;
+                            width: fit-content;
+                            margin: 1rem auto;
+                        "
+                    >
+                        <img
+                            src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091219/icon-check_hrwoau.png"
+                            alt=""
+                            style="width: 2.5rem; margin-right: 0.5rem"
+                        />
+                        Approved
+                    </div>
+                    <h1 style="font-size: 1.5rem; font-weight: bold">
+                        Congratulations, ${params.TO}!
+                    </h1>
+                    <p>
+                        Your scholarship application has been
+                        <span style="text-decoration: underline">approved</span
+                        >!
+                    </p>
+                    <p style="font-size: 1rem">
+                        ${params.message}}
+                    </p>
+                    <p>
+                        Please let us know if you have any questions or
+                        concerns.
+                    </p>
+                    <p>Best regards, OSDS</p>
+                </div>
             </div>
-        </div>
-    </div>`,
+        </div>`,
     },
     {
       subject: "Scholarship Declined!",
       html: `<div
-        style="
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 0.5rem;
-        "
-    >
-        <div style="margin: auto; max-width: 50rem">
+            style="
+                margin: auto;
+                max-width: 50rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: black;
+                padding: 1rem;
+                background-color: #f3f3f3;
+                border-radius: 1rem;
+            "
+        >
             <img
-                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091507/plm-logo_tbsnsa.png"
                 alt=""
-                style="width: 100%; max-width: 20rem"
+                style="width: 100%; max-width: 20rem; margin-bottom: 1rem"
             />
             <div
                 style="
-                    background-color: #a92b22;
                     border-radius: 0.5rem;
-                    padding: 2rem;
+                    overflow: hidden;
+                    background-color: white;
+                    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
                 "
             >
-                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
-                <h2 style="font-size: 1.5rem">
-                    Your scholarship application has been
-                    <span style="text-decoration: underline">disapproved!</span>
-                </h2>
-                <p>
-                    We regret to inform you that your scholarship application
-                    has been declined. We understand that this may be
-                    disappointing news and we apologize for any inconvenience
-                    this may cause.
-                </p>
-                <p>
-                    ${params.message}
-                </p>
-                <p>
-                    Thank you for your interest in our program and for your hard
-                    work in applying. We encourage you to reapply in the future
-                    or explore other financial aid opportunities.
-                </p>
-                <p>
-                    If you have any questions or concerns, please do not
-                    hesitate to reach out to us.
-                </p>
-                <p>Best regards, OSDS</p>
+                <div
+                    style="
+                        background-image: url('https://res.cloudinary.com/dmxftgfzc/image/upload/v1681092968/plm-background_svwks7.jpg');
+                        background-size: cover;
+                        background-position: center;
+                        width: 100%;
+                        height: 15rem;
+                    "
+                ></div>
+                <div style="padding: 1rem; display: grid">
+                    <div
+                        style="
+                            text-transform: uppercase;
+                            font-weight: bold;
+                            font-size: 1.5rem;
+                            color: #ea3d2f;
+                            display: flex;
+                            align-items: center;
+                            border: 5px solid #ea3d2f;
+                            border-radius: 50rem;
+                            padding: 0.5rem;
+                            width: fit-content;
+                            margin: 1rem auto;
+                        "
+                    >
+                        <img
+                            src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091219/icon-disapproved_vgrygl.png"
+                            alt=""
+                            style="width: 2.5rem; margin-right: 0.5rem"
+                        />
+                        Disapproved
+                    </div>
+                    <h1 style="font-size: 1.5rem; font-weight: bold">
+                        Dear ${params.TO},
+                    </h1>
+                    <p>
+                        We regret to inform you that your scholarship
+                        application has been
+                        <span style="text-decoration: underline"
+                            >disapproved</span
+                        >. We understand that this may be disappointing news and
+                        we apologize for any inconvenience this may cause.
+                    </p>
+                    <p>
+                       ${params.message}
+                    </p>
+
+                    <p>
+                        Thank you for your interest in our program and for your
+                        hard work in applying. We encourage you to reapply in
+                        the future or explore other financial aid opportunities.
+                    </p>
+                    <p>
+                        If you have any questions or concerns, please do not
+                        hesitate to reach out to us.
+                    </p>
+                    <p>Best regards, OSDS</p>
+                </div>
             </div>
-        </div>
-    </div>`,
+        </div>`,
     },
     {
       subject: "File/s Resubmission",
-      html: `<div
-        style="
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: white;
-            padding: 0.5rem;
-        "
-    >
-        <div style="margin: auto; max-width: 50rem">
+      html: ` <div
+            style="
+                margin: auto;
+                max-width: 50rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: black;
+                padding: 1rem;
+                background-color: #f3f3f3;
+                border-radius: 1rem;
+            "
+        >
             <img
-                src="https://plm.edu.ph/images/ui/plm-logo--with-header.png"
+                src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091507/plm-logo_tbsnsa.png"
                 alt=""
-                style="width: 100%; max-width: 20rem"
+                style="width: 100%; max-width: 20rem; margin-bottom: 1rem"
             />
             <div
                 style="
-                    background-color: #cf8e27;
                     border-radius: 0.5rem;
-                    padding: 2rem;
+                    overflow: hidden;
+                    background-color: white;
+                    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
                 "
             >
-                <h1 style="font-size: 1.25rem">Dear, ${params.TO}</h1>
-                <h2 style="font-size: 1.5rem">
-                    Your scholarship application has been subjected to
-                    <span style="text-decoration: underline"
-                        >resubmission!</span
+                <div
+                    style="
+                        background-image: url('https://res.cloudinary.com/dmxftgfzc/image/upload/v1681092968/plm-background_svwks7.jpg');
+                        background-size: cover;
+                        background-position: center;
+                        width: 100%;
+                        height: 15rem;
+                    "
+                ></div>
+                <div style="padding: 1rem; display: grid">
+                    <div
+                        style="
+                            text-transform: uppercase;
+                            font-weight: bold;
+                            font-size: 1.5rem;
+                            color: #f3a72e;
+                            display: flex;
+                            align-items: center;
+                            border: 5px solid #f3a72e;
+                            border-radius: 50rem;
+                            padding: 0.5rem;
+                            width: fit-content;
+                            margin: 1rem auto;
+                        "
                     >
-                </h2>
-                <p>
-                    ${params.message}
-                </p>
-                <p>
-                    Please resubmit your application with the correct
-                    information as soon as possible to prevent the termination
-                    of your application.
-                </p>
-                <p>
-                    If you have any questions or concerns, please do not
-                    hesitate to reach out to us.
-                </p>
-                <p>Best regards, OSDS</p>
+                        <img
+                            src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091219/icon-clock_outv4d.png"
+                            alt=""
+                            style="width: 2.5rem; margin-right: 0.5rem"
+                        />
+                        Resubmission
+                    </div>
+                    <h1 style="font-size: 1.5rem; font-weight: bold">
+                        Dear ${params.TO}},
+                    </h1>
+                    <p>
+                        Your scholarship application has been subjected to
+                        <span style="text-decoration: underline"
+                            >resubmission</span
+                        >!
+                    </p>
+                    <p>
+                        ${params.message}
+                    </p>
+                    <p>
+                        Please resubmit your scholarship application with the
+                        correct information as soon as possible to prevent the
+                        termination of your application.
+                    </p>
+                    <p>
+                        If you have any questions or concerns, please do not
+                        hesitate to reach out to us.
+                    </p>
+                    <p>Best regards, OSDS</p>
+                </div>
             </div>
-        </div>
-    </div>`,
+        </div>`,
     },
   ];
 

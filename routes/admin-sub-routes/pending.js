@@ -114,6 +114,7 @@ router.post("/resubmit", async (req, res) => {
           let sendMail = {
             TO: email,
             option: 2,
+            message
           };
 
           const mailInfo = await mail.sendEmail(sendMail);
