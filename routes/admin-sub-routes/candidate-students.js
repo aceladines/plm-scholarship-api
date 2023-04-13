@@ -5,8 +5,48 @@ const PDFDocument = require("pdfkit-table");
 const router = express.Router();
 const applicantsInfo = require("../../models/application");
 const openings = require("../../models/opening");
+const scholarships = require("../../models/scholarship");
 
 let csvData;
+let options = {};
+
+router.post("/send-to-committee", async (req, res) => {
+  const wordLink = req.body.wordLink;
+  try {
+    // Find the matching openingDates element and update the wordLink property
+    const updatedOpening = await openings.findOneAndUpdate(
+      {
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      },
+      {
+        $set: {
+          "openingDates.$.wordLink": wordLink,
+        },
+      },
+      {
+        projection: {
+          providerName: 1,
+          openingDates: {
+            $elemMatch: {
+              date: options.providerOpeningDate,
+            },
+          },
+        },
+        new: true,
+      }
+    );
+
+    if (!updatedOpening) {
+      return res.status(404).json({ message: "No matching document found." });
+    }
+
+
+    res.status(200).json({ message: "Word link successfully updated!" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update word link." });
+  }
+});
 
 router.post("/approve", async (req, res) => {
   const email = req.body.email;
@@ -22,10 +62,38 @@ router.post("/approve", async (req, res) => {
     );
 
     if (moveToScholar) {
-      res.status(200).json({ message: "Applicant became a scholar!" });
-    } else {
-      res.status(400).json({ message: "Something went wrong!" });
+      const existingScholarship = await scholarships.findOne({
+        providerName: moveToScholar.scholarshipProvider,
+      });
+
+      if (existingScholarship) {
+        // If the provider exists, check if the date already exists in the array
+        const dateGivenExists = existingScholarship.dateGiven.some(
+          (dateGiven) => dateGiven.date === moveToScholar.providerOpeningDate
+        );
+
+        if (!dateGivenExists) {
+          // If the date doesn't exist, append it to the array
+          existingDateGiven.dateGiven.push({
+            date: moveToScholar.providerOpeningDate,
+          });
+          await existingDateGiven.save();
+          console.log("New date given added!");
+        } else {
+          console.log("Date given already exists!");
+        }
+      } else {
+        // If the provider doesn't exist, create a new provider document with the date
+        const newProvider = new scholarships({
+          providerName: moveToScholar.scholarshipProvider,
+          dateGiven: [{ date: moveToScholar.providerOpeningDate }],
+        });
+        await newProvider.save();
+        console.log("New provider and date given added!");
+      }
     }
+
+    res.status(200).json({ message: "Applicant became a scholar!" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -352,21 +420,19 @@ router.get("/generate-csv", async (req, res) => {
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
-  let options = {};
+  options = {};
 
   if (
     initialOption &&
     (req.query.provider === undefined || req.query.openingDate === undefined)
   ) {
     options = {
-      approvalStatus: "APPROVED",
       provider: initialOption.providerName,
       providerOpeningDate:
         initialOption.openingDates[initialOption.openingDates.length - 1].date,
     };
   } else {
     options = {
-      approvalStatus: "APPROVED",
       provider: req.query.provider,
       providerOpeningDate: req.query.openingDate,
     };
@@ -384,7 +450,6 @@ router.get("/*", async (req, res) => {
     // Construct query object based on options
     const query = {
       $and: [
-        { approvalStatus: options.approvalStatus },
         { scholarshipProvider: options.provider },
         { providerOpeningDate: options.providerOpeningDate },
       ],

@@ -11,6 +11,14 @@ let openings = new Schema({
         type: String,
         required: true,
       },
+      wordLink: {
+        type: String,
+      },
+      remarks:[
+        {
+          type: String,
+        }
+      ]
     },
   ],
 });
