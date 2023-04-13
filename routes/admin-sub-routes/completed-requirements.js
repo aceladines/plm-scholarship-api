@@ -1,16 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const applicantsInfo = require("../../models/application");
-const provider = require("../../models/provider");
+const opening = require("../../models/opening");
 
 router.put("/move", async (req, res) => {
-  // Dummy Field
-  // const toMove = {
-  //   studentNumber: [2],
-  //   provider: "Robinsons-Scholarships",
-  //   providerOpeningDate: "2023-03-28",
-  // };
-
   const toMove = req.body;
 
   try {
@@ -34,29 +27,29 @@ router.put("/move", async (req, res) => {
       );
     }
 
-    const existingProvider = await provider.findOne({
+    const existingOpening = await opening.findOne({
       providerName: toMove.provider,
     });
 
-    if (existingProvider) {
-      // If the provider exists, check if the opening date already exists in the array
-      const openingDateExists = existingProvider.openingDates.some(
+    if (existingOpening) {
+      // If the opening exists, check if the opening date already exists in the array
+      const openingDateExists = existingOpening.openingDates.some(
         (openingDate) => openingDate.date === toMove.providerOpeningDate
       );
 
       if (!openingDateExists) {
         // If the opening date doesn't exist, append it to the array
-        existingProvider.openingDates.push({
+        existingOpening.openingDates.push({
           date: toMove.providerOpeningDate,
         });
-        await existingProvider.save();
+        await existingOpening.save();
         console.log("New provider opening date added!");
       } else {
         console.log("Provider opening date already exists!");
       }
     } else {
       // If the provider doesn't exist, create a new provider document with the opening date
-      const newProvider = new provider({
+      const newProvider = new opening({
         providerName: toMove.provider,
         openingDates: [{ date: toMove.providerOpeningDate }],
         scholarsDates: [],
@@ -75,9 +68,14 @@ router.get("/*", async (req, res) => {
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
   try {
+    const options = {
+      approvalStatus: "APPROVED",
+      providerOpeningDate: { $exists: false },
+      scholarshipProvider: { $exists: false },
+    };
     // execute query with page and limit values
     const applicants = await applicantsInfo
-      .find({ approvalStatus: "APPROVED" })
+      .find(options)
       .sort({ totalScore: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)

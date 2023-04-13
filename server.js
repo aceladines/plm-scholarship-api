@@ -18,7 +18,7 @@ app.set("trust proxy", true);
 mongoose.set("strictQuery", true);
 mongoose.connect(mongoString);
 const database = mongoose.connection;
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8000;
 
 // Will run once if DB is initialized and connected successfully.
 database.once("connected", () => {

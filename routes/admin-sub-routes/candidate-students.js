@@ -1,15 +1,14 @@
 const express = require("express");
-// const { AsyncParser } = require("@json2csv/node");
+const { AsyncParser } = require("@json2csv/node");
 const archiver = require("archiver");
-const PDFDocument = require("pdfkit");
-const { PassThrough } = require("stream");
+const PDFDocument = require("pdfkit-table");
 const router = express.Router();
-applicantsInfo = require("../../models/application");
-provider = require("../../models/provider");
+const applicantsInfo = require("../../models/application");
+const openings = require("../../models/opening");
 
 let csvData;
 
-router.post("/to-scholar", async (req, res) => {
+router.post("/approve", async (req, res) => {
   const email = req.body.email;
 
   try {
@@ -32,6 +31,54 @@ router.post("/to-scholar", async (req, res) => {
   }
 });
 
+router.patch("/reject", async (req, res) => {
+  try {
+    const email = req.body.email;
+    // Find and update the applicant's document to remove fields
+    const applicant = await applicantsInfo.findOne({ email });
+    const scholarshipProvider = applicant.scholarshipProvider;
+    const providerOpeningDate = applicant.providerOpeningDate;
+
+    // Remove certain fields from the applicant's document
+    const updatedApplicant = await applicantsInfo.findOneAndUpdate(
+      { email },
+      { $unset: { providerOpeningDate: "", scholarshipProvider: "" } },
+      { new: true }
+    );
+
+    if (updatedApplicant) {
+      // Find and update the provider's document to remove fields if it's the last one
+      const matchingProviders = await openings.findOne({
+        providerName: scholarshipProvider,
+        "openingDates.date": JSON.stringify(providerOpeningDate).substring(
+          1,
+          11
+        ),
+      });
+
+      if (matchingProviders.openingDates.length === 1) {
+        await openings.deleteOne({ providerName: scholarshipProvider });
+      } else {
+        await openings.findOneAndUpdate(
+          { providerName: scholarshipProvider },
+          {
+            $pull: {
+              openingDates: {
+                date: JSON.stringify(providerOpeningDate).substring(1, 11),
+              },
+            },
+          },
+          { new: true }
+        );
+      }
+    }
+
+    res.status(200).json({ message: "Fields removed successfully." });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.get("/generate-pdf", async (req, res) => {
   let data1 = [];
   let data2 = [];
@@ -39,7 +86,7 @@ router.get("/generate-pdf", async (req, res) => {
 
   for (const data of csvData) {
     data1.push({
-      "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
+      "Name of Candidate": `${data.lastName}, ${data.firstName} ${data.middleName}`,
       "Degree Program": data.course,
       Rank: data.rank,
       Remarks: data.approvalStatus,
@@ -48,7 +95,7 @@ router.get("/generate-pdf", async (req, res) => {
 
   for (const data of csvData) {
     data2.push({
-      Name: `${data.firstName} ${data.middleName} ${data.lastName}`,
+      Name: `${data.lastName}, ${data.firstName} ${data.middleName}`,
       Year: data.year,
       College: data.college,
       "Degree Program": data.course,
@@ -65,15 +112,25 @@ router.get("/generate-pdf", async (req, res) => {
   csvData.map((data, index) => {
     data3.push({
       No: index + 1,
-      "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
+      "Name of Candidate": `${data.lastName}, ${data.firstName} ${data.middleName}`,
       "Degree Program": data.course,
       Rank: data.rank,
     });
   });
 
-  const document1 = new PDFDocument();
-  const document2 = new PDFDocument();
-  const document3 = new PDFDocument();
+  const document1 = new PDFDocument({
+    layout: "landscape", // Set the layout to landscape
+    size: "letter", // Set the page size to letter (or any other size you prefer)
+  });
+  const document2 = new PDFDocument({
+    layout: "landscape", // Set the layout to landscape
+    size: "letter", // Set the page size to letter (or any other size you prefer)
+  });
+  const document3 = new PDFDocument({
+    layout: "landscape", // Set the layout to landscape
+    size: "letter", // Set the page size to letter (or any other size you prefer)
+  });
+
   const archive = archiver("zip", {
     zlib: { level: 9 }, // Sets the compression level.
   });
@@ -82,71 +139,104 @@ router.get("/generate-pdf", async (req, res) => {
   res.setHeader("Content-Type", "application/zip");
 
   // Set the content disposition header to indicate that the response should be treated as an attachment
-  res.setHeader("Content-Disposition", "attachment; filename=output.zip");
+  res.setHeader("Content-Disposition", "attachment; filename=report-pdf.zip");
 
   // Pipe the compressed archive to the response object
   archive.pipe(res);
 
   // Function to generate table in PDF document
-  const generateTable = (doc, data, headers, title) => {
-    const tableWidth = 500; // Width of the table
-    const marginLeft = (doc.page.width - tableWidth) / 2; // Calculate left margin to center the table
+  const generateTable = (header, data, document, flag) => {
+    const table = {
+      headers: [...header],
+      datas: [...data],
+      rows: [],
+    };
 
-    doc.font("Helvetica-Bold");
-    doc.fontSize(14);
-    doc.text(title, { align: "center" });
-    doc.moveDown(0.5);
+    document.text("REPORT", { align: "center" });
+    document.moveDown(2);
 
-    doc.font("Helvetica");
-    doc.fontSize(12);
+    let xVal = 0;
 
-    // Table headers with borders and centered
-    headers.forEach((header, index) => {
-      doc.text(header, marginLeft + index * 150, doc.y, {
-        align: "center",
-        border: [true, true, true, true],
-      });
-    });
+    if (flag === 1) xVal = 250;
+    if (flag === 3) xVal = 270;
 
-    doc.moveDown(0.5);
-
-    // Table rows with borders and centered
-    doc.font("Helvetica");
-    doc.fontSize(11);
-    data.forEach((row) => {
-      headers.forEach((header, index) => {
-        doc.text(row[header], marginLeft + index * 150, doc.y, {
-          align: "center",
-          border: [true, false, true, true],
-        });
-      });
-      doc.moveDown(0.5);
+    document.table(table, {
+      prepareHeader: () => document.font("Helvetica-Bold").fontSize(10),
+      prepareRow: (row, indexColumn, indexRow, rectRow) =>
+        document.font("Helvetica").fontSize(8),
+      padding: 4,
+      x: xVal,
+      // addPage: true,
     });
   };
 
-    const headers1 = ["Name of Candidate", "Degree Program", "Rank", "Remarks"];
-    const title1 = "REPORT";
-    generateTable(document1, data1, headers1, title1);
+  const headers1 = [
+    {
+      label: "Name of Candidate",
+      property: "Name of Candidate",
+      width: 120,
+      renderer: null,
+    },
+    {
+      label: "Degree Program",
+      property: "Degree Program",
+      width: 90,
+      renderer: null,
+    },
+    { label: "Rank", property: "Rank", width: 35, renderer: null },
+    { label: "Remarks", property: "Remarks", width: 53, renderer: null },
+  ];
+  const title1 = "REPORT";
+  generateTable(headers1, data1, document1, 1);
 
-    const headers2 = [
-      "Name",
-      "Year",
-      "College",
-      "Degree Program",
-      "Contact",
-      "GWA",
-      "Equiv",
-      "Parents' Household Income",
-      "Total Score",
-      "Rank",
-    ];
-    const title2 = "REPORT";
-    generateTable(document2, data2, headers2, title2);
+  const headers2 = [
+    { label: "Name", property: "Name", width: 120, renderer: null },
+    { label: "Year", property: "Year", width: 35, renderer: null },
+    { label: "College", property: "College", width: 50, renderer: null },
+    {
+      label: "Degree Program",
+      property: "Degree Program",
+      width: 90,
+      renderer: null,
+    },
+    { label: "Contact", property: "Contact", width: 70, renderer: null },
+    { label: "GWA", property: "GWA", width: 35, renderer: null },
+    { label: "Equiv", property: "Equiv", width: 37, rendere: null },
+    {
+      label: "Parents' Household Income",
+      property: "Parents' Household Income",
+      width: 120,
+      renderer: null,
+    },
+    {
+      label: "Total Score",
+      property: "Total Score",
+      width: 45,
+      renderer: null,
+    },
+    { label: "Rank", property: "Rank", width: 35, renderer: null },
+  ];
+  const title2 = "REPORT";
+  generateTable(headers2, data2, document2, 2);
 
-    const headers3 = ["No", "Name of Candidate", "Degree Program", "Rank"];
-    const title3 = "REPORT";
-    generateTable(document3, data3, headers3, title3);
-
+  const headers3 = [
+    { label: "No", property: "No", width: 25, renderer: null },
+    {
+      label: "Name of Candidate",
+      property: "Name of Candidate",
+      width: 120,
+      renderer: null,
+    },
+    {
+      label: "Degree Program",
+      property: "Degree Program",
+      width: 90,
+      renderer: null,
+    },
+    { label: "Rank", property: "Rank", width: 35, renderer: null },
+  ];
+  const title3 = "REPORT";
+  generateTable(headers3, data3, document3, 3);
 
   // Finalize the PDF documents and add them to the archive
   document1.end();
@@ -175,98 +265,99 @@ router.get("/generate-pdf", async (req, res) => {
   }
 });
 
-// router.get("/generate-csv", async (req, res) => {
-//   const document1 = [];
-//   const document2 = [];
-//   const document3 = [];
+router.get("/generate-csv", async (req, res) => {
+  const document1 = [];
+  const document2 = [];
+  const document3 = [];
 
-//   for (const data of csvData) {
-//     document1.push({
-//       "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
-//       "Degree Program": data.course,
-//       Rank: data.rank,
-//       Remarks: data.approvalStatus,
-//     });
-//   }
+  for (const data of csvData) {
+    document1.push({
+      "Name of Candidate": `${data.lastName}, ${data.firstName} ${data.middleName}`,
+      "Degree Program": data.course,
+      Rank: data.rank,
+      Remarks: data.approvalStatus,
+    });
+  }
 
-//   for (const data of csvData) {
-//     document2.push({
-//       Name: `${data.firstName} ${data.middleName} ${data.lastName}`,
-//       Year: data.year,
-//       College: data.college,
-//       "Degree Program": data.course,
-//       Contact: data.mobileNum,
-//       GWA: data.currentGwa,
-//       Equiv: data.EquivGWA,
-//       "Parents' Household Income": data.householdIncome,
-//       Equiv: data.EquivInc,
-//       "Total Score": data.totalScore,
-//       Rank: data.rank,
-//     });
-//   }
+  for (const data of csvData) {
+    document2.push({
+      Name: `${data.lastName}, ${data.firstName} ${data.middleName}`,
+      Year: data.year,
+      College: data.college,
+      "Degree Program": data.course,
+      Contact: data.mobileNum,
+      GWA: data.currentGwa,
+      Equiv: data.EquivGWA,
+      "Parents' Household Income": data.householdIncome,
+      Equiv: data.EquivInc,
+      "Total Score": data.totalScore,
+      Rank: data.rank,
+    });
+  }
 
-//   csvData.map((data, index) => {
-//     document3.push({
-//       No: index + 1,
-//       "Name of Candidate": `${data.firstName} ${data.middleName} ${data.lastName}`,
-//       "Degree Program": data.course,
-//       Rank: data.rank,
-//     });
-//   });
+  csvData.map((data, index) => {
+    document3.push({
+      No: index + 1,
+      "Name of Candidate": `${data.lastName}, ${data.firstName} ${data.middleName}`,
+      "Degree Program": data.course,
+      Rank: data.rank,
+    });
+  });
 
-//   const opts = {};
-//   const transformOpts = {};
-//   const asyncOpts = {};
-//   const parser = new AsyncParser(opts, transformOpts, asyncOpts);
+  const opts = {};
+  const transformOpts = {};
+  const asyncOpts = {};
+  const parser = new AsyncParser(opts, transformOpts, asyncOpts);
 
-//   const csv1 = await parser.parse(document1).promise();
-//   const csv2 = await parser.parse(document2).promise();
-//   const csv3 = await parser.parse(document3).promise();
+  const csv1 = await parser.parse(document1).promise();
+  const csv2 = await parser.parse(document2).promise();
+  const csv3 = await parser.parse(document3).promise();
 
-//   const archive = archiver("zip", {
-//     zlib: { level: 9 }, // Sets the compression level.
-//   });
+  const archive = archiver("zip", {
+    zlib: { level: 9 }, // Sets the compression level.
+  });
 
-//   // Append the CSV files to the archive.
-//   archive.append(csv1, { name: "file1.csv" });
-//   archive.append(csv2, { name: "file2.csv" });
-//   archive.append(csv3, { name: "file3.csv" });
+  // Append the CSV files to the archive.
+  archive.append(csv1, { name: "file1.csv" });
+  archive.append(csv2, { name: "file2.csv" });
+  archive.append(csv3, { name: "file3.csv" });
 
-//   // Wrap archive.finalize() in a Promise
-//   const finalizePromise = new Promise((resolve, reject) => {
-//     archive.finalize();
-//     archive.on("finish", resolve);
-//     archive.on("error", reject);
-//   });
+  // Wrap archive.finalize() in a Promise
+  const finalizePromise = new Promise((resolve, reject) => {
+    archive.finalize();
+    archive.on("finish", resolve);
+    archive.on("error", reject);
+  });
 
-//   // Set the content type header to indicate that the response will contain a zip file
-//   res.setHeader("Content-Type", "application/zip");
+  // Set the content type header to indicate that the response will contain a zip file
+  res.setHeader("Content-Type", "application/zip");
 
-//   // Set the content disposition header to indicate that the response should be treated as an attachment
-//   res.setHeader("Content-Disposition", "attachment; filename=output.zip");
+  // Set the content disposition header to indicate that the response should be treated as an attachment
+  res.setHeader("Content-Disposition", "attachment; filename=report-csv.zip");
 
-//   // Pipe the compressed archive to the response object
-//   archive.pipe(res);
+  // Pipe the compressed archive to the response object
+  archive.pipe(res);
 
-//   try {
-//     // Wait for the archive to finish writing before sending the response
-//     await finalizePromise;
-//     res.end();
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Failed to generate CSV files." });
-//   }
-// });
+  try {
+    // Wait for the archive to finish writing before sending the response
+    await finalizePromise;
+    res.end();
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to generate CSV files." });
+  }
+});
 
 // Default
-
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
-  const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
-
+  const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
   let options = {};
 
-  if (initialOption) {
+  if (
+    initialOption &&
+    (req.query.provider === undefined || req.query.openingDate === undefined)
+  ) {
     options = {
       approvalStatus: "APPROVED",
       provider: initialOption.providerName,
@@ -276,13 +367,13 @@ router.get("/*", async (req, res) => {
   } else {
     options = {
       approvalStatus: "APPROVED",
-      scholarshipProvider: req.params.provider,
-      providerOpeningDate: req.params.openingDate,
+      provider: req.query.provider,
+      providerOpeningDate: req.query.openingDate,
     };
   }
 
   //Get provider names and provider opening dates
-  const providerNamesAndOpenings = await provider.find().exec();
+  const providerNamesAndOpenings = await openings.find().exec();
 
   //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
 
@@ -290,9 +381,17 @@ router.get("/*", async (req, res) => {
   const limit = req.query.limit || 10;
 
   try {
+    // Construct query object based on options
+    const query = {
+      $and: [
+        { approvalStatus: options.approvalStatus },
+        { scholarshipProvider: options.provider },
+        { providerOpeningDate: options.providerOpeningDate },
+      ],
+    };
     // execute query with page and limit values
     const applicants = await applicantsInfo
-      .find(options)
+      .find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
@@ -303,13 +402,13 @@ router.get("/*", async (req, res) => {
       files: 0,
     };
 
-    csvData = await applicantsInfo.find(options).select(selectedFields).exec();
+    csvData = await applicantsInfo.find(query).select(selectedFields).exec();
 
     const csvData1Object = csvData.map((doc) => doc.toObject());
     csvData = csvData1Object;
 
     // get total documents in the Posts collection
-    const count = await applicantsInfo.countDocuments(options);
+    const count = await applicantsInfo.countDocuments(query);
 
     // return response with posts, total pages, and current page
     res.status(200).json({

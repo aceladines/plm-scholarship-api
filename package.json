@@ -27,7 +27,7 @@
     "nodemailer": "^6.9.0",
     "nodemon": "^2.0.20",
     "path": "^0.12.7",
-    "pdfkit": "^0.13.0",
+    "pdfkit-table": "^0.1.99",
     "rate-limiter-flexible": "^2.4.1",
     "routes": "^2.1.0"
   }
