@@ -4,7 +4,7 @@ const applicantsInfo = require("../../models/application");
 const opening = require("../../models/opening");
 
 router.put("/move", async (req, res) => {
-   const toMove = req.body;
+  const toMove = req.body;
   // const toMove = {
   //   provider: "SM Foundation",
   //   providerOpeningDate: "2021-10-01",
@@ -205,6 +205,8 @@ router.get("/*", async (req, res) => {
       let totalPages = Math.ceil(count / limit);
       if (totalPages === 0) totalPages = 1;
 
+      //Get provider names and provider opening dates
+      const providerNamesAndOpenings = await openings.find().exec();
 
       // return response with posts, total pages, and current page
       res.status(200).json({
@@ -213,6 +215,7 @@ router.get("/*", async (req, res) => {
         currentPage: page,
         limit,
         totalCount: count,
+        providerNamesAndOpenings,
       });
     }
   } catch (e) {
