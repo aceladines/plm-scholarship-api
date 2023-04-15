@@ -6,11 +6,11 @@ openings = require("../models/opening");
 let options;
 
 router.post("/send", async (req, res) => {
-  //   const email = req.body.email;
+  const name = req.body.name;
 
   try {
     let remarks = {
-      name: "test",
+      name,
       dateSigned: new Date().toISOString,
       status: "Signed",
     };
@@ -23,6 +23,8 @@ router.post("/send", async (req, res) => {
       { $push: { "openingDates.$.remarks": remarks } },
       { new: true }
     );
+
+    res.status(200).json({ message: "Status sent!" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
