@@ -5,12 +5,7 @@ const opening = require("../../models/opening");
 
 router.put("/move", async (req, res) => {
   const toMove = req.body;
-  // const toMove = {
-  //   provider: "SM Foundation",
-  //   providerOpeningDate: "2021-10-01",
-  //   studentNumber: ["202246782"],
-  // };
-
+  
   try {
     //Update the status of each moved student into 'APPROVED'
     let movedStudents;
