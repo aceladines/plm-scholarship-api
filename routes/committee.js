@@ -3,6 +3,12 @@ const router = express.Router();
 applicantsInfo = require("../models/application");
 openings = require("../models/opening");
 
+router.post('/send', async (req, res) => {
+    const email = req.body.email;
+
+    
+})
+
 // Default
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)

@@ -1,6 +1,18 @@
 const { Schema, model, models } = require("mongoose");
 
-let openings = new Schema({
+const remarkSchema = new Schema({
+  name: {
+    type: String,
+  },
+  dateSigned: {
+    type: String,
+  },
+  status: {
+    type: String,
+  },
+});
+
+const openings = new Schema({
   providerName: {
     type: String,
     required: true,
@@ -14,11 +26,7 @@ let openings = new Schema({
       wordLink: {
         type: String,
       },
-      remarks:[
-        {
-          type: String,
-        }
-      ]
+      remarks: [remarkSchema],
     },
   ],
 });
