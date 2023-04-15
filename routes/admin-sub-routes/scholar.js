@@ -39,15 +39,18 @@ router.get("/*", async (req, res) => {
       .find(options)
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .exec();  
+      .exec();
 
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments(options);
 
+    // Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
+
     // return response with posts, total pages, and current page
     res.status(200).json({
       applicants,
-      totalPages: Math.ceil(count / limit),
+      totalPages,
       currentPage: page,
       limit,
       totalCount: count,

@@ -114,7 +114,7 @@ router.post("/resubmit", async (req, res) => {
           let sendMail = {
             TO: email,
             option: 2,
-            message
+            message,
           };
 
           const mailInfo = await mail.sendEmail(sendMail);
@@ -154,11 +154,13 @@ router.get("/*", async (req, res) => {
     const count = await applicantsInfo.countDocuments({
       $or: [{ approvalStatus: "PENDING" }, { approvalStatus: "RESUBMISSION" }],
     });
+    // Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
 
     // return response with posts, total pages, and current page
     res.status(200).json({
       applicants,
-      totalPages: Math.ceil(count / limit),
+      totalPages,
       currentPage: page,
       limit,
       totalCount: count,

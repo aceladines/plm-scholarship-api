@@ -7,7 +7,7 @@ const applicantsInfo = require("../../models/application");
 const openings = require("../../models/opening");
 const scholarships = require("../../models/scholarship");
 
-let csvData;
+let csvData = [];
 let options = {};
 
 router.post("/send-to-committee", async (req, res) => {
@@ -40,7 +40,6 @@ router.post("/send-to-committee", async (req, res) => {
     if (!updatedOpening) {
       return res.status(404).json({ message: "No matching document found." });
     }
-
 
     res.status(200).json({ message: "Word link successfully updated!" });
   } catch (error) {
@@ -148,6 +147,11 @@ router.patch("/reject", async (req, res) => {
 });
 
 router.get("/generate-pdf", async (req, res) => {
+  if (csvData.length === 0) {
+    res.status(500).json({ error: "No data to generate" });
+    return;
+  }
+
   let data1 = [];
   let data2 = [];
   let data3 = [];
@@ -334,6 +338,11 @@ router.get("/generate-pdf", async (req, res) => {
 });
 
 router.get("/generate-csv", async (req, res) => {
+  if (csvData.length === 0) {
+    res.status(500).json({ error: "No data to generate" });
+    return;
+  }
+
   const document1 = [];
   const document2 = [];
   const document3 = [];
@@ -457,6 +466,7 @@ router.get("/*", async (req, res) => {
     // execute query with page and limit values
     const applicants = await applicantsInfo
       .find(query)
+      .sort({ rank: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
@@ -473,12 +483,20 @@ router.get("/*", async (req, res) => {
     csvData = csvData1Object;
 
     // get total documents in the Posts collection
-    const count = await applicantsInfo.countDocuments(query);
+    const count = await applicantsInfo.countDocuments({
+      $and: [
+        { providerOpeningDate: options.providerOpeningDate },
+        { scholarshipProvider: options.provider },
+      ],
+    });
+
+    // Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
 
     // return response with posts, total pages, and current page
     res.status(200).json({
       applicants,
-      totalPages: Math.ceil(count / limit),
+      totalPages,
       currentPage: page,
       limit,
       totalCount: count,

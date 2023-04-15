@@ -202,10 +202,14 @@ router.get("/*", async (req, res) => {
         );
       }
 
+      let totalPages = Math.ceil(count / limit);
+      if (totalPages === 0) totalPages = 1;
+
+
       // return response with posts, total pages, and current page
       res.status(200).json({
         applicants,
-        totalPages: Math.ceil(count / limit),
+        totalPages,
         currentPage: page,
         limit,
         totalCount: count,
