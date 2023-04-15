@@ -3,11 +3,30 @@ const router = express.Router();
 applicantsInfo = require("../models/application");
 openings = require("../models/opening");
 
-router.post('/send', async (req, res) => {
-    const email = req.body.email;
+let options;
 
-    
-})
+router.post("/send", async (req, res) => {
+  //   const email = req.body.email;
+
+  try {
+    let remarks = {
+      name: "test",
+      dateSigned: new Date().toISOString,
+      status: "Signed",
+    };
+
+    await openings.findOneAndUpdate(
+      {
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      },
+      { $push: { "openingDates.$.remarks": remarks } },
+      { new: true }
+    );
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 // Default
 router.get("/*", async (req, res) => {
