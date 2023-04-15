@@ -5,13 +5,14 @@ const opening = require("../../models/opening");
 
 router.put("/move", async (req, res) => {
   const toMove = req.body;
-  
+
   try {
     //Update the status of each moved student into 'APPROVED'
     let movedStudents;
 
     if (Object.keys(toMove).length === 0) {
       res.status(400).json({ message: "No student/s to move!" });
+      return;
     }
 
     for (const student of toMove.studentNumber) {
