@@ -25,8 +25,8 @@ database.once("connected", () => {
   console.log("Database Connected");
 });
 
-// Rate Limiter
-app.use(rateLimiterMiddleware);
+// * Rate Limiter
+// app.use(rateLimiterMiddleware);
 
 //Routes
 const applicationRouter = require("./routes/application");
