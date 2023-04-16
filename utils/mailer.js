@@ -16,7 +16,7 @@ const MAIL_SETTINGS = {
 let transporter = nodemailer.createTransport(MAIL_SETTINGS);
 
 module.exports.sendEmail = async function (params) {
-  // Objects of Email Response [Approved, Dissaprove, Resubmission]
+  //* Objects of Email Response [Approved, Dissaprove, Resubmission, Scholar]
   let emailInfo = [
     {
       subject: "Scholarship Approved!",
@@ -262,6 +262,105 @@ module.exports.sendEmail = async function (params) {
                     <p>
                         If you have any questions or concerns, please do not
                         hesitate to reach out to us.
+                    </p>
+                    <p>Best regards, OSDS</p>
+                </div>
+            </div>
+        </div>`,
+    },
+    {
+      subject: "Congratulations! You're a scholar!",
+      html: `     <div
+            style="
+                margin: auto;
+                max-width: 50rem;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: black;
+                padding: 1rem;
+                background-color: #f3f3f3;
+                border-radius: 1rem;
+            "
+        >
+            <img
+                src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091507/plm-logo_tbsnsa.png"
+                alt=""
+                style="width: 100%; max-width: 20rem; margin-bottom: 1rem"
+            />
+            <div
+                style="
+                    border-radius: 0.5rem;
+                    overflow: hidden;
+                    background-color: white;
+                    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
+                "
+            >
+                <div
+                    style="
+                        background-image: url('https://res.cloudinary.com/dmxftgfzc/image/upload/v1681092968/plm-background_svwks7.jpg');
+                        background-size: cover;
+                        background-position: center;
+                        width: 100%;
+                        height: 15rem;
+                    "
+                ></div>
+                <div style="padding: 1rem; display: grid">
+                    <div
+                        style="
+                            text-transform: uppercase;
+                            font-weight: bold;
+                            font-size: 1.5rem;
+                            color: white;
+                            background-color: #2fa84f;
+                            display: flex;
+                            align-items: center;
+                            border: 5px solid #2fa84f;
+                            border-radius: 50rem;
+                            padding: 0.5rem;
+                            width: fit-content;
+                            margin: 1rem auto;
+                        "
+                    >
+                        <img
+                            src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091219/icon-scholar_kh6xak.png"
+                            alt=""
+                            style="width: 2.5rem; margin-right: 0.5rem"
+                        />
+                        Scholar
+                    </div>
+                    <h1 style="font-size: 1.5rem; font-weight: bold">
+                        Congratulations, ${params.TO}!
+                    </h1>
+                    <p>
+                        As of
+                        <span style="text-decoration: underline">[date]</span>
+                        , you are now a scholar of
+                        <span style="text-decoration: underline"
+                            >[provider]</span
+                        >!
+                    </p>
+                    <p style="font-size: 1rem">
+                        As a scholar, you will have the opportunity to continue
+                        your education and pursue your academic goals. We are
+                        confident that you will thrive in this new chapter of
+                        your academic journey, and we look forward to supporting
+                        you as you continue to grow and achieve.
+                    </p>
+                    <p style="font-size: 1rem">
+                        We are proud to have you as a part of our scholarship
+                        community, and we believe that you will make a
+                        significant contribution to your field of study. Your
+                        passion for learning and your commitment to excellence
+                        are truly inspiring, and we are excited to see where
+                        your academic journey takes you.
+                    </p>
+                    <p style="font-size: 1rem">
+                        Please accept our warmest congratulations on this
+                        incredible achievement. We look forward to seeing you
+                        succeed and make a difference in the world.
+                    </p>
+                    <p>
+                        Please let us know if you have any questions or
+                        concerns.
                     </p>
                     <p>Best regards, OSDS</p>
                 </div>

@@ -6,6 +6,7 @@ const router = express.Router();
 const applicantsInfo = require("../../models/application");
 const openings = require("../../models/opening");
 const scholarships = require("../../models/scholarship");
+const mail = require("../../utils/mailer");
 
 let csvData = [];
 let options = {};
@@ -90,6 +91,12 @@ router.post("/approve", async (req, res) => {
         await newProvider.save();
         console.log("New provider and date given added!");
       }
+      let sendMail = {
+        TO: email,
+        option: 3,
+      };
+
+      await mail.sendEmail(sendMail);
     }
 
     res.status(200).json({ message: "Applicant became a scholar!" });
