@@ -12,4 +12,7 @@ app.use('/completed-requirements', completedReqRouter)
 const candidateRouter = require('./admin-sub-routes/candidate-students')
 app.use('/candidate-students', candidateRouter)
 
+// const scholarRouter = require('./admin-sub-routes/scholar')
+// app.use('/scholar', scholarRouter)
+
 module.exports = app

@@ -83,17 +83,22 @@ router.get("/*", async (req, res) => {
       .exec();
 
     // get total documents in the Posts collection
-    const count = await applicantsInfo.countDocuments({
-      approvalStatus: "APPROVED",
-    });
+    const count = await applicantsInfo.countDocuments(options);
+
+    let totalPages = Math.ceil(count / limit);
+    if (totalPages === 0) totalPages = 1;
+
+    //Get provider names and provider opening dates
+    const providerNamesAndOpenings = await openings.find().exec();
 
     if (applicants.length === 0) {
       res.status(200).json({
         applicants,
-        totalPages: Math.ceil(count / limit),
+        totalPages,
         currentPage: page,
         limit,
         totalCount: count,
+        providerNamesAndOpenings,
       });
     } else if (applicants.length === 1) {
       await applicantsInfo.findOneAndUpdate(
@@ -104,10 +109,11 @@ router.get("/*", async (req, res) => {
       // return response with posts, total pages, and current page
       res.status(200).json({
         applicants,
-        totalPages: Math.ceil(count / limit),
+        totalPages,
         currentPage: page,
         limit,
         totalCount: count,
+        providerNamesAndOpenings,
       });
     } else {
       let sum = 1;
@@ -197,12 +203,6 @@ router.get("/*", async (req, res) => {
           { rank: parseFloat(finalRanking[i]) }
         );
       }
-
-      let totalPages = Math.ceil(count / limit);
-      if (totalPages === 0) totalPages = 1;
-
-      //Get provider names and provider opening dates
-      const providerNamesAndOpenings = await openings.find().exec();
 
       // return response with posts, total pages, and current page
       res.status(200).json({

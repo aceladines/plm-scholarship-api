@@ -41,6 +41,7 @@ app.use("/admin", adminRouter);
 const committee = require("./routes/committee");
 app.use("/committee", committee);
 
+
 // Get error message from Joi Validator
 app.use(errors());
 

@@ -104,6 +104,7 @@ router.post("/disapprove", async (req, res) => {
 
 router.post("/resubmit", async (req, res) => {
   const email = req.body.email;
+  const message = req.body.message;
 
   try {
     applicantsInfo.findOneAndUpdate(

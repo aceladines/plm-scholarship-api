@@ -459,6 +459,9 @@ router.get("/*", async (req, res) => {
     // Construct query object based on options
     const query = {
       $and: [
+        {
+          approvalStatus: "APPROVED",
+        },
         { scholarshipProvider: options.provider },
         { providerOpeningDate: options.providerOpeningDate },
       ],
