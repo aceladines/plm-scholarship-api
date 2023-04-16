@@ -488,6 +488,7 @@ router.get("/*", async (req, res) => {
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments({
       $and: [
+        { approvalStatus: "APPROVED" },
         { providerOpeningDate: options.providerOpeningDate },
         { scholarshipProvider: options.provider },
       ],
