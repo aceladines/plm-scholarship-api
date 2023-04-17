@@ -10,6 +10,11 @@ router.post("/send", async (req, res) => {
   const name = req.body.name;
   const dateSigned = new Date().toISOString();
 
+  options = {
+    provider: "SM SCHOLARSHIP",
+    providerOpeningDate: "2023-04-16",
+  };
+
   try {
     if (Object.keys(options).length === 0 && options.constructor === Object) {
       res.status(400).json({ message: "Options are empty!" });
@@ -23,10 +28,22 @@ router.post("/send", async (req, res) => {
       status: "Signed",
     };
 
-    const getProviderAndOpening = await openings.findOne({
-      providerName: options.provider,
-      "openingDates.date": options.providerOpeningDate,
-    });
+    const getProviderAndOpening = await openings.findOne(
+      {
+        $and: [
+          { providerName: options.provider },
+          { "openingDates.date": options.providerOpeningDate },
+        ],
+      },
+      (projection = {
+        providerName: 1,
+        openingDates: {
+          $elemMatch: {
+            date: options.providerOpeningDate,
+          },
+        },
+      })
+    );
 
     if (getProviderAndOpening) {
       const remarkExist = getProviderAndOpening.openingDates[0].remarks.some(
