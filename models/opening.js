@@ -1,7 +1,7 @@
 const { Schema, model, models } = require("mongoose");
 
 const remarkSchema = new Schema({
-  name: {
+  email: {
     type: String,
   },
   dateSigned: {

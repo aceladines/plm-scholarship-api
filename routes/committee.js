@@ -6,7 +6,7 @@ openings = require("../models/opening");
 let options = {};
 
 router.post("/send", async (req, res) => {
-  const name = req.body.name;
+  const email = req.body.email;
   const dateSigned = new Date().toISOString();
 
   try {
@@ -16,7 +16,7 @@ router.post("/send", async (req, res) => {
     }
 
     let remarks = {
-      name,
+      email,
       dateSigned,
       status: "Signed",
     };
@@ -28,7 +28,7 @@ router.post("/send", async (req, res) => {
 
     if (getProviderAndOpening) {
       const remarkExist = getProviderAndOpening.openingDates[0].remarks.some(
-        (remark) => remark.name === name
+        (remark) => remark.email === email
       );
 
       if (!remarkExist) {
