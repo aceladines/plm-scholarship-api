@@ -50,7 +50,7 @@ router.post("/send-to-committee", async (req, res) => {
 
 router.post("/approve", async (req, res) => {
   const email = req.body.email;
-  const date = new Date().toISOString();
+  const date = req.body.date
 
   try {
     const moveToScholar = await applicantsInfo.findOneAndUpdate(
