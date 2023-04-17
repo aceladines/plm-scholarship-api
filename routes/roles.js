@@ -54,4 +54,21 @@ router.patch("/update", async (req, res) => {
   }
 });
 
+router.delete("/delete", async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const deletedUser = superUserModel.findOneAndDelete({
+      email,
+    });
+
+    if (!deletedUser)
+      return res.status(400).json({ message: "Account not found!" });
+
+    res.status(200).json({ deletedUser });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 module.exports = router;
