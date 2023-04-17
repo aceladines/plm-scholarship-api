@@ -1,89 +1,72 @@
 const express = require("express");
 const router = express.Router();
+const applicantsInfo = require("../../models/application");
 const scholarships = require("../../models/scholarship");
 
 // * Default
 
 router.get("/*", async (req, res) => {
-    // * LIFO (Last In First Out)
+  // * LIFO (Last In First Out)
 
-    const initialOption = await scholarships.findOne().sort({ _id: -1 }).exec();
+  const initialOption = await scholarships.findOne().sort({ _id: -1 }).exec();
 
-    let options = {};
-    if (initialOption) {
-        options = {
-            approvalStatus: "SCHOLAR",
-            provider: initialOption.providerName,
-            becomingScholarDates:
-                initialOption.becomingScholarDates[
-                    initialOption.becomingScholarDates.length - 1
-                ].date,
-        };
-    } else {
-        options = {
-            approvalStatus: "SCHOLAR",
-            provider: req.params.provider,
-            becomingScholarDates: req.params.openingDate,
-        };
-    }
-})
+  let options = {};
+  if (initialOption) {
+    options = {
+      approvalStatus: "SCHOLAR",
+      scholarshipProvider: initialOption.providerName,
+      dateOfBecomingScholar:
+        initialOption.dateGiven[initialOption.dateGiven.length - 1].date,
+    };
+  } else {
+    options = {
+      approvalStatus: "SCHOLAR",
+      scholarshipProvider: req.params.provider,
+      dateOfBecomingScholar: req.params.openingDate,
+    };
+  }
 
-// router.get("/*", async (req, res) => {
-//   //LIFO (Last In First Out)
-//   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
+  // * Get provider names and dateGiven
+  const providerNamesAndDateGiven = await scholarships.find().exec();
 
-//   let options = {};
-//   if (initialOption) {
-//     options = {
-//       approvalStatus: "SCHOLAR",
-//       provider: initialOption.providerName,
-//       becomingScholarDates:
-//         initialOption.becomingScholarDates[
-//           initialOption.becomingScholarDates.length - 1
-//         ].date,
-//     };
-//   } else {
-//     options = {
-//       approvalStatus: "SCHOLAR",
-//       provider: req.params.provider,
-//       becomingScholarDates: req.params.openingDate,
-//     };
-//   }
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
 
-//   //Get provider names and provider opening dates
-//   const providerNamesAndOpenings = await provider.find().exec();
+  try {
+    // * Create query object based on options
+    const query = {
+      $and: [
+        { approvalStatus: options.approvalStatus },
+        { scholarshipProvider: options.scholarshipProvider },
+        { dateOfBecomingScholar: options.dateOfBecomingScholar },
+      ],
+    };
 
-//   //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
+    // * execute query with page and limit values
+    const applicants = await applicantsInfo
+      .find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
 
-//   const page = req.query.page || 1;
-//   const limit = req.query.limit || 10;
+    // * get total documents in the Posts collection
+    const count = await applicantsInfo.countDocuments({ $and: [options] });
 
-//   try {
-//     // execute query with page and limit values
-//     const applicants = await applicantsInfo
-//       .find(options)
-//       .limit(limit * 1)
-//       .skip((page - 1) * limit)
-//       .exec();
+    // * Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
 
-//     // get total documents in the Posts collection
-//     const count = await applicantsInfo.countDocuments(options);
+    // * return response with posts, total pages, and current page
+    res.status(200).json({
+      applicants,
+      totalPages,
+      currentPage: page,
+      limit,
+      totalCount: count,
+      providerNamesAndDateGiven,
+    });
+  } catch (e) {
+    res.status(500).json(e.message);
+  }
+});
 
-//     // Calculate total pages
-//     const totalPages = Math.ceil(count / limit) || 1;
-
-//     // return response with posts, total pages, and current page
-//     res.status(200).json({
-//       applicants,
-//       totalPages,
-//       currentPage: page,
-//       limit,
-//       totalCount: count,
-//       providerNamesAndOpenings,
-//     });
-//   } catch (e) {
-//     res.status(500).json(e.message);
-//   }
-// });
-
-// module.exports = router;
+module.exports = router;
