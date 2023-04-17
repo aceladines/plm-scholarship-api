@@ -1,8 +1,33 @@
-// const express = require("express");
-// const router = express.Router();
-// applicantsInfo = require("../../models/application");
+const express = require("express");
+const router = express.Router();
+const scholarships = require("../../models/scholarship");
 
-// // Default
+// * Default
+
+router.get("/*", async (req, res) => {
+    // * LIFO (Last In First Out)
+
+    const initialOption = await scholarships.findOne().sort({ _id: -1 }).exec();
+
+    let options = {};
+    if (initialOption) {
+        options = {
+            approvalStatus: "SCHOLAR",
+            provider: initialOption.providerName,
+            becomingScholarDates:
+                initialOption.becomingScholarDates[
+                    initialOption.becomingScholarDates.length - 1
+                ].date,
+        };
+    } else {
+        options = {
+            approvalStatus: "SCHOLAR",
+            provider: req.params.provider,
+            becomingScholarDates: req.params.openingDate,
+        };
+    }
+})
+
 // router.get("/*", async (req, res) => {
 //   //LIFO (Last In First Out)
 //   const initialOption = await provider.findOne().sort({ _id: -1 }).exec();
