@@ -1,7 +1,6 @@
 const express = require("express");
 const superUserModel = require("../models/superuser");
 const router = express.Router();
-const superUserModel = require("../models/superuser");
 
 router.get("/", async (req, res) => {
   try {
