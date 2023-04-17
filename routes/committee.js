@@ -7,6 +7,7 @@ let options = {};
 
 router.post("/send", async (req, res) => {
   const email = req.body.email;
+  const name = req.body.name;
   const dateSigned = new Date().toISOString();
 
   try {
@@ -17,6 +18,7 @@ router.post("/send", async (req, res) => {
 
     let remarks = {
       email,
+      name,
       dateSigned,
       status: "Signed",
     };
