@@ -61,6 +61,11 @@ router.post("/approve", async (req, res) => {
       { new: true }
     );
 
+    console.log(
+      "🚀 ~ file: candidate-students.js:63 ~ router.post ~ moveToScholar:",
+      moveToScholar
+    );
+
     if (moveToScholar) {
       const existingScholarship = await scholarships.findOne({
         providerName: moveToScholar.scholarshipProvider,
@@ -69,13 +74,13 @@ router.post("/approve", async (req, res) => {
       if (existingScholarship) {
         // If the provider exists, check if the date already exists in the array
         const dateGivenExists = existingScholarship.dateGiven.some(
-          (dateGiven) => dateGiven.date === moveToScholar.providerOpeningDate
+          (dateGiven) => dateGiven.date === moveToScholar.dateOfBecomingScholar
         );
 
         if (!dateGivenExists) {
           // If the date doesn't exist, append it to the array
           existingScholarship.dateGiven.push({
-            date: moveToScholar.providerOpeningDate,
+            date: moveToScholar.dateOfBecomingScholar,
           });
           await existingScholarship.save();
           console.log("New date given added!");
@@ -86,7 +91,7 @@ router.post("/approve", async (req, res) => {
         // If the provider doesn't exist, create a new provider document with the date
         const newProvider = new scholarships({
           providerName: moveToScholar.scholarshipProvider,
-          dateGiven: [{ date: moveToScholar.providerOpeningDate }],
+          dateGiven: [{ date: moveToScholar.dateOfBecomingScholar }],
         });
         await newProvider.save();
         console.log("New provider and date given added!");
