@@ -332,10 +332,10 @@ module.exports.sendEmail = async function (params) {
                     </h1>
                     <p>
                         As of
-                        <span style="text-decoration: underline">[date]</span>
+                        <span style="text-decoration: underline">${params.date}</span>
                         , you are now a scholar of
                         <span style="text-decoration: underline"
-                            >[provider]</span
+                            >${params.provider}</span
                         >!
                     </p>
                     <p style="font-size: 1rem">
