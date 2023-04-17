@@ -49,8 +49,7 @@ router.post("/send-to-committee", async (req, res) => {
 });
 
 router.post("/approve", async (req, res) => {
-  const email = req.body.email;
-  const date = req.body.date
+  const { email, date } = req.body;
 
   try {
     const moveToScholar = await applicantsInfo.findOneAndUpdate(
@@ -80,7 +79,7 @@ router.post("/approve", async (req, res) => {
           });
           await existingScholarship.save();
           console.log("New date given added!");
-        } else {  
+        } else {
           console.log("Date given already exists!");
         }
       } else {
@@ -94,6 +93,8 @@ router.post("/approve", async (req, res) => {
       }
       let sendMail = {
         TO: email,
+        date,
+        provider: moveToScholar.scholarshipProvider,
         option: 3,
       };
 
