@@ -11,7 +11,10 @@ router.get("/*", async (req, res) => {
   const initialOption = await scholarships.findOne().sort({ _id: -1 }).exec();
 
   let options = {};
-  if (initialOption) {
+  if (
+    initialOption &&
+    (req.query.provider === undefined || req.query.dateGiven === undefined)
+  ) {
     options = {
       approvalStatus: "SCHOLAR",
       scholarshipProvider: initialOption.providerName,
@@ -21,8 +24,8 @@ router.get("/*", async (req, res) => {
   } else {
     options = {
       approvalStatus: "SCHOLAR",
-      scholarshipProvider: req.params.provider,
-      dateOfBecomingScholar: req.params.openingDate,
+      scholarshipProvider: req.query.provider,
+      dateOfBecomingScholar: req.query.dateGiven,
     };
   }
 
