@@ -64,6 +64,19 @@ router.post("/approve", async (req, res) => {
     const dateToPush = moveToScholar.dateOfBecomingScholar.toISOString();
 
     if (moveToScholar) {
+      // * Delete the data in providerNamesAndOpenings if it is the last candidate to have the opening date
+      const providerNamesAndOpenings = await openings.find({
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      });
+
+      if (providerNamesAndOpenings.length === 1) {
+        await openings.findOneAndDelete({
+          providerName: options.provider,
+          "openingDates.date": options.providerOpeningDate,
+        });
+      }
+
       const existingScholarship = await scholarships.findOne({
         providerName: moveToScholar.scholarshipProvider,
       });
@@ -457,6 +470,8 @@ router.get("/*", async (req, res) => {
       providerOpeningDate: req.query.openingDate,
     };
   }
+
+  console.log(options);
 
   //Get provider names and provider opening dates
   const providerNamesAndOpenings = await openings.find().exec();
