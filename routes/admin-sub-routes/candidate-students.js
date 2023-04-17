@@ -50,12 +50,13 @@ router.post("/send-to-committee", async (req, res) => {
 
 router.post("/approve", async (req, res) => {
   const email = req.body.email;
+  const date = new Date().toISOString();
 
   try {
     const moveToScholar = await applicantsInfo.findOneAndUpdate(
       { email },
       {
-        dateOfBecomingScholar: new Date().toISOString(),
+        dateOfBecomingScholar: date,
         approvalStatus: "SCHOLAR",
       },
       { new: true }
@@ -74,12 +75,12 @@ router.post("/approve", async (req, res) => {
 
         if (!dateGivenExists) {
           // If the date doesn't exist, append it to the array
-          existingDateGiven.dateGiven.push({
+          existingScholarship.dateGiven.push({
             date: moveToScholar.providerOpeningDate,
           });
-          await existingDateGiven.save();
+          await existingScholarship.save();
           console.log("New date given added!");
-        } else {
+        } else {  
           console.log("Date given already exists!");
         }
       } else {
