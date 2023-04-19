@@ -137,34 +137,55 @@ router.patch("/reject", async (req, res) => {
       { new: true }
     );
 
-    if (updatedApplicant) {
-      // Find and update the provider's document to remove fields if it's the last one
-      const matchingProviders = await openings.findOne({
-        providerName: scholarshipProvider,
-        "openingDates.date": JSON.stringify(providerOpeningDate).substring(
-          1,
-          11
-        ),
+    if (true) {
+      // * Get all the applicants that have scholarshipProvider and providerOpeningDate fields
+      const applicants = await applicantsInfo.find({
+        approvalStatus: "APPROVED",
+        scholarshipProvider: { $exists: true },
+        providerOpeningDate: { $exists: true },
       });
 
-      if (matchingProviders.openingDates.length === 1) {
-        await openings.deleteOne({ providerName: scholarshipProvider });
-      } else {
-        await openings.findOneAndUpdate(
-          { providerName: scholarshipProvider },
-          {
-            $pull: {
-              openingDates: {
-                date: JSON.stringify(providerOpeningDate).substring(1, 11),
-              },
-            },
-          },
-          { new: true }
-        );
-      }
-    }
+      const providerExist = applicants.some((applicant) => {
+        return applicant.scholarshipProvider == scholarshipProvider;
+      });
 
-    res.status(200).json({ message: "Fields removed successfully." });
+      if (providerExist) {
+        const providerWithSameOpeningDate = applicants.some((applicant) => {
+          return applicant.providerOpeningDate === providerOpeningDate;
+        });
+
+        if (providerWithSameOpeningDate) {
+          // * If the length of the applicants with the sample opdening date is 1, pull the date from the array
+          const applicantsWithSameOpeningDate = applicants.filter(
+            (applicant) => {
+              return applicant.providerOpeningDate === providerOpeningDate;
+            }
+          );
+
+          if (applicantsWithSameOpeningDate.length === 1) {
+            await openings.findOneAndUpdate(
+              { providerName: scholarshipProvider },
+              {
+                $pull: {
+                  openingDates: {
+                    date: JSON.stringify(providerOpeningDate).substring(1, 11),
+                  },
+                },
+              },
+              { new: true }
+            );
+            res.status(200).json({ message: "Fields removed successfully." });
+          }
+        }
+      } else {
+        await openings.findOneAndDelete({
+          providerName: scholarshipProvider,
+        });
+        res.status(200).json({ message: "Fields removed successfully." });
+      }
+    } else {
+      res.status(404).json({ message: "No matching document found." });
+    }
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
