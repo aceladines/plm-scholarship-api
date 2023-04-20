@@ -54,6 +54,7 @@ router.post("/approve", async (req, res) => {
           EquivGWA: gwaEquiv,
           EquivInc: incEquiv,
           totalScore,
+          dateApproved: new Date().toISOString(),
         },
         async (err) => {
           if (!err) {
@@ -83,7 +84,7 @@ router.post("/disapprove", async (req, res) => {
   try {
     applicantsInfo.findOneAndUpdate(
       { email },
-      { approvalStatus: "DISAPPROVED" },
+      { approvalStatus: "DISAPPROVED", dateDisapproved: new Date().toISOString() },
       async (err) => {
         if (!err) {
           let sendMail = {
@@ -109,7 +110,7 @@ router.post("/resubmit", async (req, res) => {
   try {
     applicantsInfo.findOneAndUpdate(
       { email },
-      { approvalStatus: "RESUBMISSION" },
+      { approvalStatus: "RESUBMISSION", dateOfResubmission: new Date().toISOString() },
       async (err) => {
         if (!err) {
           let sendMail = {
