@@ -137,7 +137,7 @@ router.patch("/reject", async (req, res) => {
       { new: true }
     );
 
-    if (true) {
+    if (updatedApplicant) {
       // * Get all the applicants that have scholarshipProvider and providerOpeningDate fields
       const applicants = await applicantsInfo.find({
         approvalStatus: "APPROVED",
@@ -146,43 +146,52 @@ router.patch("/reject", async (req, res) => {
       });
 
       const providerExist = applicants.some((applicant) => {
-        return applicant.scholarshipProvider == scholarshipProvider;
+        return applicant.scholarshipProvider === scholarshipProvider;
       });
 
+      // * If provider exists, check how many applicants have the same scholarshipProvider
       if (providerExist) {
-        const providerWithSameOpeningDate = applicants.some((applicant) => {
-          return applicant.providerOpeningDate === providerOpeningDate;
+        const applicantsWithSameProvider = applicants.filter((applicant) => {
+          return applicant.scholarshipProvider === scholarshipProvider;
         });
 
-        if (providerWithSameOpeningDate) {
-          // * If the length of the applicants with the sample opdening date is 1, pull the date from the array
-          const applicantsWithSameOpeningDate = applicants.filter(
-            (applicant) => {
-              return applicant.providerOpeningDate === providerOpeningDate;
-            }
-          );
+        // * Get the number of unique opening dates
+        const uniqueOpeningDates = applicantsWithSameProvider.reduce((acc, curr) => {
+          if (!acc.includes(curr.providerOpeningDate)) {
+            acc.push(curr.providerOpeningDate);
+          }
+          return acc;
+        }, []);
 
-          if (applicantsWithSameOpeningDate.length === 1) {
+        // * If the number of unique opening dates is 1, and the number of applicants with the same provider and opening date is 1, delete the provider document
+
+        if (applicantsWithSameProvider) {
+          const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
+            return applicant.providerOpeningDate === providerOpeningDate;
+          });
+
+          if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
+            await openings.findOneAndDelete({
+              providerName: scholarshipProvider,
+              "openingDates.date": providerOpeningDate,
+            });
+          } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
+            // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
             await openings.findOneAndUpdate(
               { providerName: scholarshipProvider },
               {
                 $pull: {
                   openingDates: {
-                    date: JSON.stringify(providerOpeningDate).substring(1, 11),
+                    date: providerOpeningDate,
                   },
                 },
               },
               { new: true }
             );
-            res.status(200).json({ message: "Fields removed successfully." });
           }
         }
-      } else {
-        await openings.findOneAndDelete({
-          providerName: scholarshipProvider,
-        });
-        res.status(200).json({ message: "Fields removed successfully." });
       }
+      res.status(200).json({ message: "Applicant rejected." });
     } else {
       res.status(404).json({ message: "No matching document found." });
     }
@@ -279,8 +288,7 @@ router.get("/generate-pdf", async (req, res) => {
 
     document.table(table, {
       prepareHeader: () => document.font("Helvetica-Bold").fontSize(10),
-      prepareRow: (row, indexColumn, indexRow, rectRow) =>
-        document.font("Helvetica").fontSize(8),
+      prepareRow: (row, indexColumn, indexRow, rectRow) => document.font("Helvetica").fontSize(8),
       padding: 4,
       x: xVal,
       // addPage: true,
@@ -476,14 +484,10 @@ router.get("/*", async (req, res) => {
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
   options = {};
 
-  if (
-    initialOption &&
-    (req.query.provider === undefined || req.query.openingDate === undefined)
-  ) {
+  if (initialOption && (req.query.provider === undefined || req.query.openingDate === undefined)) {
     options = {
       provider: initialOption.providerName,
-      providerOpeningDate:
-        initialOption.openingDates[initialOption.openingDates.length - 1].date,
+      providerOpeningDate: initialOption.openingDates[initialOption.openingDates.length - 1].date,
     };
   } else {
     options = {
