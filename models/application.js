@@ -109,10 +109,18 @@ const applicationForm = new Schema({
   dateOfBecomingScholar: {
     type: Date,
   },
+  dateApproved: {
+    type: Date,
+  },
+  dateDisapproved: {
+    type: Date,
+  },
+  dateOfResubmission: {
+    type: Date,
+  },
   files: studentRegFormFilesSchema,
 });
 
-const applicationFormData =
-  models.applicationFormData || model("applicationFormData", applicationForm);
+const applicationFormData = models.applicationFormData || model("applicationFormData", applicationForm);
 
 module.exports = applicationFormData;
