@@ -7,6 +7,7 @@ const applicantsInfo = require("../../models/application");
 const openings = require("../../models/opening");
 const scholarships = require("../../models/scholarship");
 const mail = require("../../utils/mailer");
+const superUsers = require("../../models/superuser");
 
 let csvData = [];
 let options = {};
@@ -40,6 +41,18 @@ router.post("/send-to-committee", async (req, res) => {
 
     if (!updatedOpening) {
       return res.status(404).json({ message: "No matching document found." });
+    }
+
+    const committees = (await superUsers.find({ role: "COMMITTEE" })).map((user) => user.email);
+
+    for (const x of committees) {
+      let sendMail = {
+        TO: x,
+        option: 4,
+        message: "Link to the word document for the application form has been sent to you.",
+      };
+
+      await mail.sendEmail(sendMail);
     }
 
     res.status(200).json({ message: "Word link successfully updated!" });
