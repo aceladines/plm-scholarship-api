@@ -2,6 +2,7 @@ const express = require("express");
 const superUserModel = require("../models/superuser");
 const router = express.Router();
 
+// * Get all superusers
 router.get("/", async (req, res) => {
   try {
     const roles = await superUserModel.find();
@@ -11,11 +12,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// * Get superuser by email
+router.get("/:email", async (req, res) => {
+  const email = req.params.email;
+  try {
+    const superuser = superUserModel.findOne({ email });
+    if (superuser) return res.status(200).json({ superuser });
+    res.status(400).json({ message: "Superuser not found!" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// * Add new superuser
 router.post("/add", async (req, res) => {
   const { fName, mName, lName, email, role } = req.body;
 
   const newRole = new superUserModel({
-    name: `${fName} ${mName} ${lName}`,
+    fName,
+    mName,
+    lName,
     email,
     role,
   });
@@ -28,6 +44,7 @@ router.post("/add", async (req, res) => {
   }
 });
 
+// * Update superuser
 router.patch("/update", async (req, res) => {
   const { fName, mName, lName, email, role } = req.body;
 
@@ -38,15 +55,16 @@ router.patch("/update", async (req, res) => {
       },
       {
         $set: {
-          name: `${fName} ${mName} ${lName}`,
+          fName,
+          mName,
+          lName,
           role,
         },
       },
       { new: true }
     );
 
-    if (!updateAdmin)
-      return res.status(400).json({ message: "Admin not found!" });
+    if (!updateAdmin) return res.status(400).json({ message: "Admin not found!" });
 
     res.status(200).json({ updateAdmin });
   } catch (error) {
@@ -54,6 +72,7 @@ router.patch("/update", async (req, res) => {
   }
 });
 
+// * Delete superuser
 router.delete("/delete", async (req, res) => {
   const { email } = req.body;
 
@@ -62,8 +81,7 @@ router.delete("/delete", async (req, res) => {
       email,
     });
 
-    if (!deletedUser)
-      return res.status(400).json({ message: "Account not found!" });
+    if (!deletedUser) return res.status(400).json({ message: "Account not found!" });
 
     res.status(200).json({ deletedUser });
   } catch (error) {
