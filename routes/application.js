@@ -69,9 +69,7 @@ router.post(
       // Upload data to MongoDB
       const application = await ApplicationForm.create(req.body);
 
-      return res
-        .status(200)
-        .json({ message: "Application successful", application });
+      return res.status(200).json({ message: "Application successful", application });
     } catch (error) {
       return res.status(500).json({ error: error.message });
     }
@@ -123,10 +121,7 @@ router.put(
 
       if (req.body.filesToDelete) {
         //Delete files
-        updatedDeletedFiles = await fileDelete(
-          req.body.email,
-          JSON.parse(req.body.filesToDelete)
-        );
+        updatedDeletedFiles = await fileDelete(req.body.email, JSON.parse(req.body.filesToDelete));
 
         if (!updatedDeletedFiles) {
           res.status(400).json({ error: "File deletion failed" });
@@ -166,5 +161,37 @@ router.put(
     }
   }
 );
+
+router.patch("/reset", async (req, res) => {
+  const statusToReset = req.body.statusToReset;
+
+  try {
+    if (statusToReset === "Approved") {
+      await ApplicationForm.updateMany(
+        {
+          approvalStatus: "APPROVED",
+          scholarshipProvider: { $exist: false },
+          providerOpeningDate: { $exists: false },
+        },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    } else if (statusToReset === "Disapproved") {
+      await ApplicationForm.updateMany(
+        {
+          approvalStatus: "DISAPPROVED",
+        },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    } else {
+      await ApplicationForm.updateMany(
+        { approvalStatus: "RESUBMISSION" },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    }
+    res.status(200).json({ message: "Reset successful!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
 
 module.exports = router;
