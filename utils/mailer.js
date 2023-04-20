@@ -16,7 +16,7 @@ const MAIL_SETTINGS = {
 let transporter = nodemailer.createTransport(MAIL_SETTINGS);
 
 module.exports.sendEmail = async function (params) {
-  //* Objects of Email Response [Approved, Dissaprove, Resubmission, Scholar]
+  //* Objects of Email Response [Approved, Dissaprove, Resubmission, Scholar, Committee]
   let emailInfo = [
     {
       subject: "Scholarship Approved!",
@@ -366,6 +366,10 @@ module.exports.sendEmail = async function (params) {
                 </div>
             </div>
         </div>`,
+    },
+    {
+      subject: "Review the sent list",
+      html: `<div> Message: ${params.message} </div>`,
     },
   ];
 
