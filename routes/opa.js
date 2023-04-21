@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const applicantsInfo = require("../../models/application");
-const scholarships = require("../../models/scholarship");
+const applicantsInfo = require("../models/application");
+const scholarships = require("../models/scholarship");
 
 let options = {};
 
