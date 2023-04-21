@@ -44,6 +44,9 @@ app.use("/committee", committee);
 const roles = require("./routes/roles");
 app.use("/roles", roles);
 
+const opa = require("./routes/opa");
+app.use("/opa", opa);
+
 // Get error message from Joi Validator
 app.use(errors());
 
@@ -56,8 +59,7 @@ app.use(function (req, res) {
           domain: "global",
           reason: "notFound",
           message: "Not Found",
-          description:
-            "Couldn't find the requested resource '" + req.originalUrl + "'",
+          description: "Couldn't find the requested resource '" + req.originalUrl + "'",
         },
       ],
       code: 404,
