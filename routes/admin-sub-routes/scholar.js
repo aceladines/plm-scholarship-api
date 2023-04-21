@@ -6,9 +6,23 @@ const archives = require("../../models/archive");
 
 let options = {};
 
+// * Delete one record
+router.post("/archive-data/:email", async (req, res) => {
+  try {
+    const archivedDoc = await applicantsInfo.findOne({ email: req.params.email }).lean().exec();
+    await archives.insertMany(archivedDoc);
+
+    await db.applicantsInfo.deleteOne({ email: req.params.email });
+
+    res.status(200).json({ message: "Archived successfully!!" });
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+});
+
 // * Delete Records based on options
 router.post("/archive-data", async (req, res) => {
-  if (options.Object.keys(options).length === 0) res.status(400).json({ message: "No data to archive!!" });
+  if (Object.keys(options).length === 0) res.status(400).json({ message: "No data to archive!!" });
 
   try {
     const criteria = { $and: [options] };
