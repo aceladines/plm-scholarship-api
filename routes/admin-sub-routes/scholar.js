@@ -2,24 +2,41 @@ const express = require("express");
 const router = express.Router();
 const applicantsInfo = require("../../models/application");
 const scholarships = require("../../models/scholarship");
+const archives = require("../../models/archive");
+
+let options = {};
+
+// * Delete Records based on options
+router.post("/archive-data", async (req, res) => {
+  if (options.Object.keys(options).length === 0) res.status(400).json({ message: "No data to archive!!" });
+
+  try {
+    const criteria = { $and: [options] };
+
+    // Archive documents
+    const archivedDocs = await applicantsInfo.find(criteria).lean().exec();
+    await archives.insertMany(archivedDocs);
+
+    // Delete documents
+    await db.applicantsInfo.deleteMany(criteria);
+
+    res.status(200).json({ message: "Archived successfully!!" });
+  } catch (error) {
+    res.status(500).json(error.message);
+  }
+});
 
 // * Default
-
 router.get("/*", async (req, res) => {
   // * LIFO (Last In First Out)
 
   const initialOption = await scholarships.findOne().sort({ _id: -1 }).exec();
 
-  let options = {};
-  if (
-    initialOption &&
-    (req.query.provider === undefined || req.query.dateGiven === undefined)
-  ) {
+  if (initialOption && (req.query.provider === undefined || req.query.dateGiven === undefined)) {
     options = {
       approvalStatus: "SCHOLAR",
       scholarshipProvider: initialOption.providerName,
-      dateOfBecomingScholar:
-        initialOption.dateGiven[initialOption.dateGiven.length - 1].date,
+      dateOfBecomingScholar: initialOption.dateGiven[initialOption.dateGiven.length - 1].date,
     };
   } else {
     options = {
