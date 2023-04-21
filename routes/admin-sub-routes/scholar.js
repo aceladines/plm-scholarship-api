@@ -25,14 +25,21 @@ router.post("/archive-data", async (req, res) => {
   if (Object.keys(options).length === 0) res.status(400).json({ message: "No data to archive!!" });
 
   try {
-    const criteria = { $and: [options] };
+    // * Create query object based on options
+    const query = {
+      $and: [
+        { approvalStatus: options.approvalStatus },
+        { scholarshipProvider: options.scholarshipProvider },
+        { dateOfBecomingScholar: options.dateOfBecomingScholar },
+      ],
+    };
 
     // Archive documents
-    const archivedDocs = await applicantsInfo.find(criteria).lean().exec();
+    const archivedDocs = await applicantsInfo.find(query).lean().exec();
     await archives.insertMany(archivedDocs);
 
     // Delete documents
-    await db.applicantsInfo.deleteMany(criteria);
+    await db.applicantsInfo.deleteMany(query);
 
     res.status(200).json({ message: "Archived successfully!!" });
   } catch (error) {
