@@ -332,8 +332,7 @@ module.exports.sendEmail = async function (params) {
                     </h1>
                     <p>
                         As of
-                        <span style="text-decoration: underline">${params.date}</span>
-                        , you are now a scholar of
+                        <span style="text-decoration: underline">${params.date}</span>, you are now a scholar of
                         <span style="text-decoration: underline"
                             >${params.provider}</span
                         >!
@@ -369,7 +368,77 @@ module.exports.sendEmail = async function (params) {
     },
     {
       subject: "Review the sent list",
-      html: `<div> Message: ${params.message} </div>`,
+      html: `   <div
+      style="
+          margin: auto;
+          max-width: 50rem;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          color: black;
+          padding: 1rem;
+          background-color: #f3f3f3;
+          border-radius: 1rem;
+      "
+  >
+      <img
+          src="https://res.cloudinary.com/dmxftgfzc/image/upload/v1681091507/plm-logo_tbsnsa.png"
+          alt=""
+          style="width: 100%; max-width: 20rem; margin-bottom: 1rem"
+      />
+      <div
+          style="
+              border-radius: 0.5rem;
+              overflow: hidden;
+              background-color: white;
+              box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
+          "
+      >
+          <div
+              style="
+                  background-image: url('https://res.cloudinary.com/dmxftgfzc/image/upload/v1681092968/plm-background_svwks7.jpg');
+                  background-size: cover;
+                  background-position: center;
+                  width: 100%;
+                  height: 15rem;
+              "
+          ></div>
+          <div style="padding: 1rem; display: grid">
+              <h1 style="font-size: 1.5rem; font-weight: bold">
+                  Dear ${params.firstName},
+              </h1>
+
+              <p style="font-size: 1rem">
+                  The document of the list of candidates for the provider
+                  ${params.provider} that opened on ${params.providerOpeningDate} is now available for
+                  you to sign and verify.
+              </p>
+              <p style="font-size: 1rem">
+                  Please sign the document as soon as you can so we can
+                  provide our students the necessary financial assistance
+                  in no time.
+              </p>
+              <p>
+                  Please let us know if you have any questions or
+                  concerns.
+              </p>
+              <p>Best regards, OSDS</p>
+              <a
+                  href="${params.webLink}"
+                  style="
+                      padding: 1rem 1.5rem;
+                      font-size: rem;
+                      background-color: #346df1;
+                      border-radius: 0.5rem;
+                      color: white;
+                      font-weight: bold;
+                      cursor: pointer;
+                      text-decoration: none;
+                      margin: auto;
+                  "
+                  >Go to the website.</a
+              >
+          </div>
+      </div>
+  </div>`,
     },
   ];
 
