@@ -1,15 +1,14 @@
 const { Schema, model, models } = require("mongoose");
 
 const superUSerSchema = new Schema({
-  fName: {
+  firstName: {
     type: String,
     required: true,
   },
-  mName: {
+  middleName: {
     type: String,
-    required: true,
   },
-  lName: {
+  lastName: {
     type: String,
     required: true,
   },
