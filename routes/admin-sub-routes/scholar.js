@@ -22,7 +22,7 @@ router.post("/archive-data/:email", async (req, res) => {
 
 // * Delete Records based on options
 router.post("/archive-data", async (req, res) => {
-  if (Object.keys(options).length === 0) res.status(400).json({ message: "No data to archive!!" });
+  if (Object.keys(options).length === 0) return res.status(400).json({ message: "No data to archive!!" });
 
   try {
     // * Create query object based on options
