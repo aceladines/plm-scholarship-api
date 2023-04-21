@@ -13,7 +13,11 @@ let csvData = [];
 let options = {};
 
 router.post("/send-to-committee", async (req, res) => {
-  const wordLink = req.body.wordLink;
+  const { wordLink, webLink } = req.body;
+
+  if (Object.keys(options).length === 0 && options.constructor === Object)
+    return res.status(400).json({ message: "No options selected!" });
+
   try {
     // Find the matching openingDates element and update the wordLink property
     const updatedOpening = await openings.findOneAndUpdate(
@@ -43,13 +47,18 @@ router.post("/send-to-committee", async (req, res) => {
       return res.status(404).json({ message: "No matching document found." });
     }
 
-    const committees = (await superUsers.find({ role: "COMMITTEE" })).map((user) => user.email);
+    const committees = (await superUsers.find({ role: "COMMITTEE" })).map((user) => {
+      user.email, user.firstName;
+    });
 
     for (const x of committees) {
       let sendMail = {
         TO: x,
+        firstName: x.firstName,
+        provider: options.provider,
+        providerOpeningDate: options.providerOpeningDate,
         option: 4,
-        message: "Link to the word document for the application form has been sent to you.",
+        webLink,
       };
 
       await mail.sendEmail(sendMail);
