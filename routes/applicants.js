@@ -21,6 +21,39 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// * Reset status of applicants
+router.patch("/reset", async (req, res) => {
+  const statusToReset = req.body.statusToReset;
+
+  try {
+    if (statusToReset === "Approved") {
+      await applicantsInfo.updateMany(
+        {
+          approvalStatus: "APPROVED",
+          scholarshipProvider: { $exist: false },
+          providerOpeningDate: { $exists: false },
+        },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    } else if (statusToReset === "Disapproved") {
+      await applicantsInfo.updateMany(
+        {
+          approvalStatus: "DISAPPROVED",
+        },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    } else {
+      await applicantsInfo.updateMany(
+        { approvalStatus: "RESUBMISSION" },
+        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+      );
+    }
+    res.status(200).json({ message: "Reset successful!" });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 // Get all applicants
 router.get("/*", async (req, res) => {
   //   let options = {};
@@ -35,8 +68,7 @@ router.get("/*", async (req, res) => {
 
   const options = {
     ...(req.query.yearlvl && { year: req.query.yearlvl }),
-    ...(req.query.course ||
-      (req.query.degree && { course: req.query.course || req.query.degree })),
+    ...(req.query.course || (req.query.degree && { course: req.query.course || req.query.degree })),
   };
 
   const page = req.query.page || 1;
