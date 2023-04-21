@@ -26,12 +26,12 @@ router.get("/:email", async (req, res) => {
 
 // * Add new superuser
 router.post("/add", async (req, res) => {
-  const { fName, mName, lName, email, role } = req.body;
+  const { firstName, middleName, lastName, email, role } = req.body;
 
   const newRole = new superUserModel({
-    fName,
-    mName,
-    lName,
+    firstName,
+    middleName,
+    lastName,
     email,
     role,
   });
@@ -46,7 +46,7 @@ router.post("/add", async (req, res) => {
 
 // * Update superuser
 router.patch("/update", async (req, res) => {
-  const { fName, mName, lName, email, role } = req.body;
+  const { firstName, middleName, lastName, email, role } = req.body;
 
   try {
     const updateAdmin = await superUserModel.findOneAndUpdate(
@@ -55,9 +55,9 @@ router.patch("/update", async (req, res) => {
       },
       {
         $set: {
-          fName,
-          mName,
-          lName,
+          firstName,
+          middleName,
+          lastName,
           role,
         },
       },
