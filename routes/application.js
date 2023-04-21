@@ -162,36 +162,4 @@ router.put(
   }
 );
 
-router.patch("/reset", async (req, res) => {
-  const statusToReset = req.body.statusToReset;
-
-  try {
-    if (statusToReset === "Approved") {
-      await ApplicationForm.updateMany(
-        {
-          approvalStatus: "APPROVED",
-          scholarshipProvider: { $exist: false },
-          providerOpeningDate: { $exists: false },
-        },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
-      );
-    } else if (statusToReset === "Disapproved") {
-      await ApplicationForm.updateMany(
-        {
-          approvalStatus: "DISAPPROVED",
-        },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
-      );
-    } else {
-      await ApplicationForm.updateMany(
-        { approvalStatus: "RESUBMISSION" },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
-      );
-    }
-    res.status(200).json({ message: "Reset successful!" });
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
-});
-
 module.exports = router;
