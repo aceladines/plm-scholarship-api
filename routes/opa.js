@@ -16,6 +16,7 @@ router.get("/generate-csv", async (req, res) => {
   const { startDate, endDate } = req.body;
 
   let data = [];
+  console.log("🚀 ~ file: opa.js:19 ~ router.get ~ data:", data);
 });
 
 // * Default
