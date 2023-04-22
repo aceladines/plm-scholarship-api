@@ -5,22 +5,41 @@ const mail = require("../../utils/mailer");
 
 router.get("/search", async (req, res) => {
   const searchParam = req.query.searchParam;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
 
   try {
-    const applicants = await applicantsInfo.find({
+    const query = {
       $or: [
         { firstName: { $regex: searchParam, $options: "i" } },
         { lastName: { $regex: searchParam, $options: "i" } },
         { approvalStatus: { $regex: searchParam, $options: "i" } },
         { studentNum: { $regex: searchParam, $options: "i" } },
       ],
-    });
-
+    };
     if (!applicants.length) {
       throw new Error("No applicants found!");
     }
 
-    res.status(200).json({ applicants });
+    const applicants = await applicantsInfo
+      .find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    // * Get total documents in the collection
+    const count = await applicantsInfo.countDocuments(query);
+
+    // * Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
+
+    res.status(200).json({
+      applicants,
+      totalPages,
+      currentPage: page,
+      limit,
+      totalCount: count,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

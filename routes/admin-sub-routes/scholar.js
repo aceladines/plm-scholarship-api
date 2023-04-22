@@ -8,9 +8,11 @@ let options = {};
 
 router.get("/search", async (req, res) => {
   const searchParam = req.query.searchParam;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
 
   try {
-    const applicants = await applicantsInfo.find({
+    const query = {
       $or: [
         { firstName: { $regex: searchParam, $options: "i" } },
         { lastName: { $regex: searchParam, $options: "i" } },
@@ -18,13 +20,32 @@ router.get("/search", async (req, res) => {
         { studentNum: { $regex: searchParam, $options: "i" } },
         { approvalStatus: { $regex: searchParam, $options: "i" } },
       ],
-    });
+    };
 
     if (!applicants.length) {
       throw new Error("No applicants found!");
     }
 
-    res.status(200).json({ applicants });
+    // * Get provider names and dateGiven
+    const providerNamesAndDateGiven = await scholarships.find().exec();
+
+    const applicants = await applicantsInfo
+      .find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    // * Get total documents in the collection
+    const count = await applicantsInfo.countDocuments(query);
+
+    res.status(200).json({
+      applicants,
+      totalPages,
+      currentPage: page,
+      limit,
+      totalCount: count,
+      providerNamesAndDateGiven,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
