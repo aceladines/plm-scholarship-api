@@ -3,6 +3,29 @@ const router = express.Router();
 applicantsInfo = require("../../models/application");
 const mail = require("../../utils/mailer");
 
+router.get("/search", async (req, res) => {
+  const searchParam = req.query.searchParam;
+
+  try {
+    const applicants = await applicantsInfo.find({
+      $or: [
+        { firstName: { $regex: searchParam, $options: "i" } },
+        { lastName: { $regex: searchParam, $options: "i" } },
+        { approvalStatus: { $regex: searchParam, $options: "i" } },
+        { studentNum: { $regex: searchParam, $options: "i" } },
+      ],
+    });
+
+    if (!applicants.length) {
+      throw new Error("No applicants found!");
+    }
+
+    res.status(200).json({ applicants });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post("/approve", async (req, res) => {
   const email = req.body.email;
   const message = req.body.message;

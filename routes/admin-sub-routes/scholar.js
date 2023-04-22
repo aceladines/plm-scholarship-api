@@ -6,6 +6,30 @@ const archives = require("../../models/archive");
 
 let options = {};
 
+router.get("/search", async (req, res) => {
+  const searchParam = req.query.searchParam;
+
+  try {
+    const applicants = await applicantsInfo.find({
+      $or: [
+        { firstName: { $regex: searchParam, $options: "i" } },
+        { lastName: { $regex: searchParam, $options: "i" } },
+        { course: { $regex: searchParam, $options: "i" } },
+        { studentNum: { $regex: searchParam, $options: "i" } },
+        { approvalStatus: { $regex: searchParam, $options: "i" } },
+      ],
+    });
+
+    if (!applicants.length) {
+      throw new Error("No applicants found!");
+    }
+
+    res.status(200).json({ applicants });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // * Delete one record
 router.post("/archive-data/:email", async (req, res) => {
   try {
