@@ -4,6 +4,19 @@ const applicantsInfo = require("../models/application");
 const scholarships = require("../models/scholarship");
 
 let options = {};
+let dataToGenerate = [];
+
+// * Generate Report
+router.get("/generate-csv", async (req, res) => {
+  if (dataToGenerate.length === 0) {
+    res.status(500).json({ error: "No data to generate" });
+    return;
+  }
+
+  const { startDate, endDate } = req.body;
+
+  let data = [];
+});
 
 // * Default
 router.get("/*", async (req, res) => {
