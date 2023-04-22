@@ -19,15 +19,54 @@ router.get("/search", async (req, res) => {
       ],
     };
 
+    const applicants = await applicantsInfo
+      .find(query)
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
     if (!applicants.length) {
       throw new Error("No applicants found!");
     }
+
+    // * Get total documents in the collection
+    const count = await applicantsInfo.countDocuments(query);
+
+    // * Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
+
+    res.status(200).json({
+      applicants,
+      totalPages,
+      currentPage: page,
+      limit,
+      totalCount: count,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// * Get by status
+router.get("/status", async (req, res) => {
+  const status = req.query.status;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 10;
+
+  try {
+    const query = {
+      approvalStatus: status,
+    };
 
     const applicants = await applicantsInfo
       .find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
+
+    if (!applicants.length) {
+      throw new Error("No applicants found!");
+    }
 
     // * Get total documents in the collection
     const count = await applicantsInfo.countDocuments(query);
@@ -63,45 +102,6 @@ router.get("/:id", async (req, res) => {
     res.status(200).json({ applicant });
   } catch (e) {
     res.status(500).json({ error: e.message });
-  }
-});
-
-// * Get by status
-router.get("/:status", async (req, res) => {
-  const status = req.params.status;
-  const page = req.query.page || 1;
-  const limit = req.query.limit || 10;
-
-  try {
-    const query = {
-      approvalStatus: status,
-    };
-
-    const applicants = await applicantsInfo
-      .find(query)
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
-      .exec();
-
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
-
-    // * Get total documents in the collection
-    const count = await applicantsInfo.countDocuments(query);
-
-    // * Calculate total pages
-    const totalPages = Math.ceil(count / limit) || 1;
-
-    res.status(200).json({
-      applicants,
-      totalPages,
-      currentPage: page,
-      limit,
-      totalCount: count,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 
