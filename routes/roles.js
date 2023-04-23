@@ -37,7 +37,7 @@ router.post("/add", async (req, res) => {
   });
 
   try {
-    const emailExist = await newRole.findOne({ email });
+    const emailExist = await superUserModel.findOne({ email });
     if (emailExist) return res.status(400).json({ message: "User already exists!" });
 
     const savedRole = await newRole.save();
