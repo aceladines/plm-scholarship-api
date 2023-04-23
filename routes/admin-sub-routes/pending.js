@@ -12,6 +12,7 @@ router.get("/search", async (req, res) => {
     const query = {
       $and: [
         { approvalStatus: "PENDING" },
+        { approvalStatus: "RESUBMISSION" },
         {
           $or: [
             { firstName: { $regex: searchParam, $options: "i" } },
