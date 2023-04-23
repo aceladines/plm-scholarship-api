@@ -11,8 +11,8 @@ router.post("/send", async (req, res) => {
   const dateSigned = new Date().toISOString();
 
   options = {
-    provider: "SM SCHOLARSHIP",
-    providerOpeningDate: "2023-04-16",
+    provider: options.provider,
+    providerOpeningDate: options.providerOpeningDate,
   };
 
   try {
@@ -30,10 +30,7 @@ router.post("/send", async (req, res) => {
 
     const getProviderAndOpening = await openings.findOne(
       {
-        $and: [
-          { providerName: options.provider },
-          { "openingDates.date": options.providerOpeningDate },
-        ],
+        $and: [{ providerName: options.provider }, { "openingDates.date": options.providerOpeningDate }],
       },
       (projection = {
         providerName: 1,
@@ -75,14 +72,10 @@ router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
 
-  if (
-    initialOption &&
-    (req.query.provider === undefined || req.query.openingDate === undefined)
-  ) {
+  if (initialOption && (req.query.provider === undefined || req.query.openingDate === undefined)) {
     options = {
       provider: initialOption.providerName,
-      providerOpeningDate:
-        initialOption.openingDates[initialOption.openingDates.length - 1].date,
+      providerOpeningDate: initialOption.openingDates[initialOption.openingDates.length - 1].date,
     };
   } else {
     options = {
@@ -100,10 +93,7 @@ router.get("/*", async (req, res) => {
   try {
     // Construct query object based on options
     const query = {
-      $and: [
-        { scholarshipProvider: options.provider },
-        { providerOpeningDate: options.providerOpeningDate },
-      ],
+      $and: [{ scholarshipProvider: options.provider }, { providerOpeningDate: options.providerOpeningDate }],
     };
     // execute query with page and limit values
     const applicants = await applicantsInfo
@@ -115,10 +105,7 @@ router.get("/*", async (req, res) => {
 
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments({
-      $and: [
-        { providerOpeningDate: options.providerOpeningDate },
-        { scholarshipProvider: options.provider },
-      ],
+      $and: [{ providerOpeningDate: options.providerOpeningDate }, { scholarshipProvider: options.provider }],
     });
 
     // Calculate total pages
