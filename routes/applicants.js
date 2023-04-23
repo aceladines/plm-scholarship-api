@@ -110,7 +110,7 @@ router.patch("/reset", async (req, res) => {
   const statusToReset = req.body.statusToReset;
 
   try {
-    if (statusToReset === "Approved") {
+    if (statusToReset === "APPROVED") {
       await applicantsInfo.updateMany(
         {
           approvalStatus: "APPROVED",
@@ -119,14 +119,16 @@ router.patch("/reset", async (req, res) => {
         },
         { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
       );
-    } else if (statusToReset === "Disapproved") {
+    }
+    if (statusToReset === "DISAPPROVED") {
       await applicantsInfo.updateMany(
         {
           approvalStatus: "DISAPPROVED",
         },
         { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
       );
-    } else {
+    }
+    if (statusToReset === "RESUBMISSION") {
       await applicantsInfo.updateMany(
         { approvalStatus: "RESUBMISSION" },
         { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
