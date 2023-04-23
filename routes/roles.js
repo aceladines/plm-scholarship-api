@@ -58,6 +58,7 @@ router.patch("/update", async (req, res) => {
           firstName,
           middleName,
           lastName,
+          email,
           role,
         },
       },
