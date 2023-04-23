@@ -47,13 +47,14 @@ router.post("/send-to-committee", async (req, res) => {
       return res.status(404).json({ message: "No matching document found." });
     }
 
-    const committees = (await superUsers.find({ role: "COMMITTEE" })).map((user) => {
-      user.email, user.firstName;
+    const committees = (await superUsers.find({ role: "committee" })).map((user) => {
+      return { email: user.email, firstName: user.firstName };
     });
+    console.log("🚀 ~ file: candidate-students.js:53 ~ committees ~ committees:", committees);
 
     for (const x of committees) {
       let sendMail = {
-        TO: x,
+        TO: x.email,
         firstName: x.firstName,
         provider: options.provider,
         providerOpeningDate: options.providerOpeningDate,
