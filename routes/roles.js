@@ -75,9 +75,8 @@ router.patch("/update", async (req, res) => {
 // * Delete superuser
 router.delete("/delete", async (req, res) => {
   const { email } = req.body;
-
   try {
-    const deletedUser = superUserModel.findOneAndDelete({
+    const deletedUser = await superUserModel.findOneAndDelete({
       email,
     });
 
