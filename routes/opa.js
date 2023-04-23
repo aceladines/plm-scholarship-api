@@ -13,24 +13,29 @@ router.get("/search", async (req, res) => {
 
   try {
     const query = {
-      $or: [
-        { firstName: { $regex: searchParam, $options: "i" } },
-        { lastName: { $regex: searchParam, $options: "i" } },
-        { course: { $regex: searchParam, $options: "i" } },
-        { studentNum: { $regex: searchParam, $options: "i" } },
-        { approvalStatus: { $regex: searchParam, $options: "i" } },
+      $and: [
+        { approvalStatus: "SCHOLAR" },
+        {
+          $or: [
+            { firstName: { $regex: searchParam, $options: "i" } },
+            { lastName: { $regex: searchParam, $options: "i" } },
+            { course: { $regex: searchParam, $options: "i" } },
+            { studentNum: { $regex: searchParam, $options: "i" } },
+            { approvalStatus: { $regex: searchParam, $options: "i" } },
+          ],
+        },
       ],
     };
-
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
 
     const applicants = await applicantsInfo
       .find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
+
+    if (!applicants.length) {
+      throw new Error("No applicants found!");
+    }
 
     // * Get provider names and dateGiven
     const providerNamesAndDateGiven = await scholarships.find().exec();
