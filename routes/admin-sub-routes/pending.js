@@ -10,22 +10,28 @@ router.get("/search", async (req, res) => {
 
   try {
     const query = {
-      $or: [
-        { firstName: { $regex: searchParam, $options: "i" } },
-        { lastName: { $regex: searchParam, $options: "i" } },
-        { approvalStatus: { $regex: searchParam, $options: "i" } },
-        { studentNum: { $regex: searchParam, $options: "i" } },
+      $and: [
+        { approvalStatus: "PENDING" },
+        {
+          $or: [
+            { firstName: { $regex: searchParam, $options: "i" } },
+            { lastName: { $regex: searchParam, $options: "i" } },
+            { approvalStatus: { $regex: searchParam, $options: "i" } },
+            { studentNum: { $regex: searchParam, $options: "i" } },
+          ],
+        },
       ],
     };
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
 
     const applicants = await applicantsInfo
       .find(query)
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
+
+    if (!applicants.length) {
+      throw new Error("No applicants found!");
+    }
 
     // * Get total documents in the collection
     const count = await applicantsInfo.countDocuments(query);
