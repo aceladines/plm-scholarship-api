@@ -50,7 +50,6 @@ router.post("/send-to-committee", async (req, res) => {
     const committees = (await superUsers.find({ role: "committee" })).map((user) => {
       return { email: user.email, firstName: user.firstName };
     });
-    console.log("🚀 ~ file: candidate-students.js:53 ~ committees ~ committees:", committees);
 
     for (const x of committees) {
       let sendMail = {
@@ -88,16 +87,57 @@ router.post("/approve", async (req, res) => {
 
     if (moveToScholar) {
       // * Delete the data in providerNamesAndOpenings if it is the last candidate to have the opening date
-      const providerNamesAndOpenings = await openings.find({
-        providerName: options.provider,
-        "openingDates.date": options.providerOpeningDate,
+      const applicants = await applicantsInfo.find({
+        approvalStatus: "APPROVED",
+        scholarshipProvider: { $exists: true },
+        providerOpeningDate: { $exists: true },
       });
 
-      if (providerNamesAndOpenings.length === 1) {
-        await openings.findOneAndDelete({
-          providerName: options.provider,
-          "openingDates.date": options.providerOpeningDate,
+      const providerExist = applicants.some((applicant) => {
+        return applicant.scholarshipProvider === moveToScholar.scholarshipProvider;
+      });
+
+      // * If provider exists, check how many applicants have the same scholarshipProvider
+      if (providerExist) {
+        const applicantsWithSameProvider = applicants.filter((applicant) => {
+          return applicant.scholarshipProvider === moveToScholar.scholarshipProvider;
         });
+
+        // * Get the number of unique opening dates
+        const uniqueOpeningDates = applicantsWithSameProvider.reduce((acc, curr) => {
+          if (!acc.includes(curr.providerOpeningDate)) {
+            acc.push(curr.providerOpeningDate);
+          }
+          return acc;
+        }, []);
+
+        // * If the number of unique opening dates is 1, and the number of applicants with the same provider and opening date is 1, delete the provider document
+
+        if (applicantsWithSameProvider) {
+          const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
+            return applicant.providerOpeningDate === moveToScholar.providerOpeningDate;
+          });
+
+          if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
+            await openings.findOneAndDelete({
+              providerName: moveToScholar.scholarshipProvider,
+              "openingDates.date": moveToScholar.providerOpeningDate,
+            });
+          } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
+            // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
+            await openings.findOneAndUpdate(
+              { providerName: moveToScholar.scholarshipProvider },
+              {
+                $pull: {
+                  openingDates: {
+                    date: moveToScholar.providerOpeningDate,
+                  },
+                },
+              },
+              { new: true }
+            );
+          }
+        }
       }
 
       const existingScholarship = await scholarships.findOne({
@@ -116,19 +156,16 @@ router.post("/approve", async (req, res) => {
             date: dateToPush,
           });
           await existingScholarship.save();
-          console.log("New date given added!");
-        } else {
-          console.log("Date given already exists!");
         }
       } else {
-        // If the provider doesn't exist, create a new provider document with the date
+        // * If the provider doesn't exist, create a new provider document with the date
         const newProvider = new scholarships({
           providerName: moveToScholar.scholarshipProvider,
           dateGiven: [{ date: dateToPush }],
         });
         await newProvider.save();
-        console.log("New provider and date given added!");
       }
+
       let sendMail = {
         TO: email,
         date,
