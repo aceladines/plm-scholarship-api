@@ -5,9 +5,7 @@ const path = require("path");
 const { nanoid } = require("nanoid");
 
 const containerName = process.env.AZURE_CONTAINER_NAME;
-const blobServiceClient = BlobServiceClient.fromConnectionString(
-  process.env.AZURE_CONNECTION_STRING
-);
+const blobServiceClient = BlobServiceClient.fromConnectionString(process.env.AZURE_CONNECTION_STRING);
 const containerClient = blobServiceClient.getContainerClient(containerName);
 
 const formTypes = [
@@ -26,9 +24,7 @@ module.exports = async function uploadFiles(files, email) {
 
   for (const file of files) {
     const folderName = email;
-    const blobName = `${folderName}/${nanoid(16)}-${path.basename(
-      file.originalname
-    )}`;
+    const blobName = `${folderName}/${nanoid(16)}-${path.basename(file.originalname)}`;
     const blockBlobClient = containerClient.getBlockBlobClient(blobName);
     const blobOptions = {
       blobHTTPHeaders: { blobContentType: "application/pdf" },
@@ -40,7 +36,7 @@ module.exports = async function uploadFiles(files, email) {
       if (file.originalname.includes(formType.keyword)) {
         filesObj[formType.type] = {
           fileName: file.originalname,
-          filePath: `https://plmeams.blob.core.windows.net/scholarship-files/${blobName}`,
+          filePath: `https://plmeams.blob.core.windows.net/files/${blobName}`,
         };
       }
     }
