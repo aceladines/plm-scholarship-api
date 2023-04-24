@@ -189,64 +189,69 @@ router.patch("/reject", async (req, res) => {
     const scholarshipProvider = applicant.scholarshipProvider;
     const providerOpeningDate = applicant.providerOpeningDate;
 
-    // Remove certain fields from the applicant's document
-    const updatedApplicant = await applicantsInfo.findOneAndUpdate(
-      { email },
-      { $unset: { providerOpeningDate: "", scholarshipProvider: "" } },
-      { new: true }
-    );
+    // * Get all the applicants that have scholarshipProvider and providerOpeningDate fields
+    const applicants = await applicantsInfo.find({
+      approvalStatus: "APPROVED",
+      scholarshipProvider: { $exists: true },
+      providerOpeningDate: { $exists: true },
+    });
 
-    if (updatedApplicant) {
-      // * Get all the applicants that have scholarshipProvider and providerOpeningDate fields
-      const applicants = await applicantsInfo.find({
-        approvalStatus: "APPROVED",
-        scholarshipProvider: { $exists: true },
-        providerOpeningDate: { $exists: true },
-      });
+    const providerExist = applicants.some((applicant) => {
+      return applicant.scholarshipProvider === scholarshipProvider;
+    });
 
-      const providerExist = applicants.some((applicant) => {
+    // * If provider exists, check how many applicants have the same scholarshipProvider
+    if (providerExist) {
+      const applicantsWithSameProvider = applicants.filter((applicant) => {
         return applicant.scholarshipProvider === scholarshipProvider;
       });
 
-      // * If provider exists, check how many applicants have the same scholarshipProvider
-      if (providerExist) {
-        const applicantsWithSameProvider = applicants.filter((applicant) => {
-          return applicant.scholarshipProvider === scholarshipProvider;
+      // * Get the number of unique opening dates
+      const uniqueOpeningDates = applicantsWithSameProvider.reduce((acc, curr) => {
+        if (!acc.includes(curr.providerOpeningDate)) {
+          acc.push(curr.providerOpeningDate);
+        }
+        return acc;
+      }, []);
+
+      // * If the number of unique opening dates is 1, and the number of applicants with the same provider and opening date is 1, delete the provider document
+
+      if (applicantsWithSameProvider) {
+        const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
+          return applicant.providerOpeningDate.toISOString() === providerOpeningDate.toISOString();
         });
 
-        // * Get the number of unique opening dates
-        const uniqueOpeningDates = applicantsWithSameProvider.reduce((acc, curr) => {
-          if (!acc.includes(curr.providerOpeningDate)) {
-            acc.push(curr.providerOpeningDate);
-          }
-          return acc;
-        }, []);
-
-        // * If the number of unique opening dates is 1, and the number of applicants with the same provider and opening date is 1, delete the provider document
-
-        if (applicantsWithSameProvider) {
-          const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
-            return applicant.providerOpeningDate.toISOString() === providerOpeningDate.toISOString();
+        if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
+          await openings.findOneAndDelete({
+            providerName: scholarshipProvider,
           });
 
-          if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
-            await openings.findOneAndDelete({
-              providerName: scholarshipProvider,
-            });
-          } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
-            // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
-            await openings.findOneAndUpdate(
-              { providerName: scholarshipProvider },
-              {
-                $pull: {
-                  openingDates: {
-                    date: providerOpeningDate.toISOString().substr(0, 10),
-                  },
+          // Remove certain fields from the applicant's document
+          await applicantsInfo.findOneAndUpdate(
+            { email },
+            { $unset: { providerOpeningDate: "", scholarshipProvider: "" } },
+            { new: true }
+          );
+        } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
+          // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
+          await openings.findOneAndUpdate(
+            { providerName: scholarshipProvider },
+            {
+              $pull: {
+                openingDates: {
+                  date: providerOpeningDate.toISOString().substr(0, 10),
                 },
               },
-              { new: true }
-            );
-          }
+            },
+            { new: true }
+          );
+
+          // Remove certain fields from the applicant's document
+          await applicantsInfo.findOneAndUpdate(
+            { email },
+            { $unset: { providerOpeningDate: "", scholarshipProvider: "" } },
+            { new: true }
+          );
         }
       }
       res.status(200).json({ message: "Applicant rejected." });
