@@ -126,7 +126,7 @@ router.get("/*", async (req, res) => {
     { $unwind: "$dateGiven" },
 
     // Sort by date in ascending order
-    { $sort: { "dateGiven.date": -11 } },
+    { $sort: { "dateGiven.date": -1 } },
 
     // Group by scholarship provider and reconstruct the openingDates array
     {
