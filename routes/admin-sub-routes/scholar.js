@@ -133,7 +133,7 @@ router.get("/*", async (req, res) => {
       $group: {
         _id: "$_id",
         providerName: { $first: "$providerName" },
-        openingDates: { $push: "$dateGiven" },
+        dateGiven: { $push: "$dateGiven" },
       },
     },
   ]);
