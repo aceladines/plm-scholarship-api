@@ -16,9 +16,9 @@ router.get("/", async (req, res) => {
 router.get("/:email", async (req, res) => {
   const email = req.params.email;
   try {
-    const superuser = superUserModel.findOne({ email });
-    if (superuser) return res.status(200).json({ superuser });
-    res.status(400).json({ message: "Superuser not found!" });
+    const superuser = await superUserModel.findOne({ email });
+    if (!superuser) return res.status(400).json({ message: "Superuser not found!" });
+    res.status(400).json({ superuser });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -49,7 +49,7 @@ router.post("/add", async (req, res) => {
 
 // * Update superuser
 router.patch("/update", async (req, res) => {
-  const { firstName, middleName, lastName, email, role } = req.body;
+  const { firstName, middleName, lastName, email, newEmail, role } = req.body;
 
   try {
     const updateAdmin = await superUserModel.findOneAndUpdate(
@@ -61,7 +61,7 @@ router.patch("/update", async (req, res) => {
           firstName,
           middleName,
           lastName,
-          email,
+          email: newEmail || email,
           role,
         },
       },
