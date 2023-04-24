@@ -556,12 +556,23 @@ router.get("/*", async (req, res) => {
     };
   }
 
-  console.log(options);
-
   //Get provider names and provider opening dates
-  const providerNamesAndOpenings = await openings.find().exec();
+  const providerNamesAndOpenings = await openings.aggregate([
+    // Unwind the openingDates array
+    { $unwind: "$openingDates" },
 
-  //   if (req.query.provider) options.scholarshipProvider = req.query.provider;
+    // Sort by date in ascending order
+    { $sort: { "openingDates.date": -1 } },
+
+    // Group by scholarship provider and reconstruct the openingDates array
+    {
+      $group: {
+        _id: "$_id",
+        providerName: { $first: "$providerName" },
+        openingDates: { $push: "$openingDates" },
+      },
+    },
+  ]);
 
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
@@ -573,6 +584,8 @@ router.get("/*", async (req, res) => {
         {
           approvalStatus: "APPROVED",
         },
+        { scholarshipProvider: { $exists: true } },
+        { providerOpeningDate: { $exists: true } },
         { scholarshipProvider: options.provider },
         { providerOpeningDate: options.providerOpeningDate },
       ],
@@ -591,10 +604,10 @@ router.get("/*", async (req, res) => {
       files: 0,
     };
 
-    csvData = await applicantsInfo.find(query).select(selectedFields).exec();
+    csvData = await applicantsInfo.find(query).sort({ rank: 1 }).select(selectedFields).exec();
 
-    const csvData1Object = csvData.map((doc) => doc.toObject());
-    csvData = csvData1Object;
+    const csvDataToObject = csvData.map((doc) => doc.toObject());
+    csvData = csvDataToObject;
 
     // get total documents in the Posts collection
     const count = await applicantsInfo.countDocuments({
