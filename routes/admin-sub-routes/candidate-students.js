@@ -115,7 +115,7 @@ router.post("/approve", async (req, res) => {
 
         if (applicantsWithSameProvider) {
           const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
-            return applicant.providerOpeningDate === moveToScholar.providerOpeningDate;
+            return applicant.providerOpeningDate.toISOString() === moveToScholar.providerOpeningDate;
           });
 
           if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
@@ -226,7 +226,7 @@ router.patch("/reject", async (req, res) => {
 
         if (applicantsWithSameProvider) {
           const applicantsWithSameProviderAndOpeningDate = applicantsWithSameProvider.filter((applicant) => {
-            return applicant.providerOpeningDate.toISOString() === providerOpeningDate;
+            return applicant.providerOpeningDate.toISOString() === providerOpeningDate.toISOString();
           });
 
           if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
