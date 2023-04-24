@@ -72,7 +72,7 @@ router.post("/send-to-committee", async (req, res) => {
 
 router.post("/approve", async (req, res) => {
   const { email, date } = req.body;
-  const dateToPush = date.toISOString();
+  const dateToPush = date;
 
   try {
     // Find the applicant document
