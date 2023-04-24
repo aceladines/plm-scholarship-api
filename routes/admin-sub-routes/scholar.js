@@ -28,7 +28,28 @@ router.get("/search", async (req, res) => {
     };
 
     // * Get provider names and dateGiven
-    const providerNamesAndDateGiven = await scholarships.find().exec();
+    const providerNamesAndDateGiven = await scholarships.aggregate([
+      // Unwind the openingDates array
+      { $unwind: "$dateGiven" },
+
+      // Sort by date in ascending order
+      { $sort: { "dateGiven.date": -1 } },
+
+      // Group by scholarship provider and reconstruct the openingDates array
+      {
+        $group: {
+          _id: "$_id",
+          providerName: { $first: "$providerName" },
+          dateGiven: { $push: "$dateGiven" },
+        },
+      },
+    ]);
+
+    // * Get total documents in the collection
+    const count = await applicantsInfo.countDocuments(query);
+
+    // * Calculate total pages
+    const totalPages = Math.ceil(count / limit) || 1;
 
     const applicants = await applicantsInfo
       .find(query)
@@ -36,15 +57,16 @@ router.get("/search", async (req, res) => {
       .skip((page - 1) * limit)
       .exec();
 
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
+    if (!applicants) {
+      res.status(200).json({
+        applicants,
+        totalPages,
+        currentPage: page,
+        limit,
+        totalCount: count,
+        providerNamesAndDateGiven,
+      });
     }
-
-    // * Get total documents in the collection
-    const count = await applicantsInfo.countDocuments(query);
-
-    // * Calculate total pages
-    const totalPages = Math.ceil(count / limit) || 1;
 
     res.status(200).json({
       applicants,
