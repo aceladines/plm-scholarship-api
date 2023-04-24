@@ -103,7 +103,7 @@ router.post("/approve", async (req, res) => {
     totalScore = gwaEquiv + incEquiv;
 
     try {
-      await applicantsInfo.findOneAndUpdate(
+      applicantsInfo.findOneAndUpdate(
         { email: user.email },
         {
           approvalStatus: "APPROVED",
