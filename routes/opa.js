@@ -33,10 +33,6 @@ router.get("/search", async (req, res) => {
       .skip((page - 1) * limit)
       .exec();
 
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
-
     // * Get provider names and dateGiven
     const providerNamesAndDateGiven = await scholarships.find().exec();
 
@@ -45,6 +41,17 @@ router.get("/search", async (req, res) => {
 
     // * Calculate total pages
     const totalPages = Math.ceil(count / limit) || 1;
+
+    if (!applicants) {
+      res.status(200).json({
+        applicants,
+        totalPages,
+        currentPage: page,
+        limit,
+        totalCount: count,
+        providerNamesAndDateGiven,
+      });
+    }
 
     res.status(200).json({
       applicants,
