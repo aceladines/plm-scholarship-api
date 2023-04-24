@@ -11,8 +11,9 @@ router.get("/search", async (req, res) => {
   try {
     const query = {
       $and: [
-        { approvalStatus: "PENDING" },
-        { approvalStatus: "RESUBMISSION" },
+        {
+          $or: [{ approvalStatus: "PENDING" }, { approvalStatus: "RESUBMISSION" }],
+        },
         {
           $or: [
             { firstName: { $regex: searchParam, $options: "i" } },
@@ -30,15 +31,21 @@ router.get("/search", async (req, res) => {
       .skip((page - 1) * limit)
       .exec();
 
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
-
     // * Get total documents in the collection
     const count = await applicantsInfo.countDocuments(query);
 
     // * Calculate total pages
     const totalPages = Math.ceil(count / limit) || 1;
+
+    if (!applicants) {
+      res.status(200).json({
+        applicants,
+        totalPages,
+        currentPage: page,
+        limit,
+        totalCount: count,
+      });
+    }
 
     res.status(200).json({
       applicants,
