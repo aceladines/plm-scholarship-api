@@ -121,7 +121,6 @@ router.post("/approve", async (req, res) => {
           if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
             await openings.findOneAndDelete({
               providerName: moveToScholar.scholarshipProvider,
-              "openingDates.date": moveToScholar.providerOpeningDate,
             });
           } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
             // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
@@ -233,7 +232,6 @@ router.patch("/reject", async (req, res) => {
           if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length === 1) {
             await openings.findOneAndDelete({
               providerName: scholarshipProvider,
-              "openingDates.date": providerOpeningDate,
             });
           } else if (applicantsWithSameProviderAndOpeningDate.length === 1 && uniqueOpeningDates.length > 1) {
             // * If the number of unique opening dates is more than 1, and the number of applicants with the same provider and opening date is 1, delete the opening date document
