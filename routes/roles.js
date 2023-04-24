@@ -16,9 +16,9 @@ router.get("/", async (req, res) => {
 router.get("/:email", async (req, res) => {
   const email = req.params.email;
   try {
-    const superuser = await superUserModel.findOne({ email });
+    const user = await superUserModel.findOne({ email });
     if (!superuser) return res.status(400).json({ message: "Superuser not found!" });
-    res.status(400).json({ superuser });
+    res.status(400).json({ user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
