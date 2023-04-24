@@ -36,7 +36,7 @@ module.exports = async function uploadFiles(files, email) {
       if (file.originalname.includes(formType.keyword)) {
         filesObj[formType.type] = {
           fileName: file.originalname,
-          filePath: `https://plmeams.blob.core.windows.net/files/${blobName}`,
+          filePath: `https://plmscholarship.blob.core.windows.net/files/${blobName}`,
         };
       }
     }
