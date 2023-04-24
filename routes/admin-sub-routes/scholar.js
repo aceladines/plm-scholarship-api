@@ -121,7 +121,22 @@ router.get("/*", async (req, res) => {
   }
 
   // * Get provider names and dateGiven
-  const providerNamesAndDateGiven = await scholarships.find().exec();
+  const providerNamesAndDateGiven = await scholarships.aggregate([
+    // Unwind the openingDates array
+    { $unwind: "$dateGiven" },
+
+    // Sort by date in ascending order
+    { $sort: { "dateGiven.date": -11 } },
+
+    // Group by scholarship provider and reconstruct the openingDates array
+    {
+      $group: {
+        _id: "$_id",
+        providerName: { $first: "$providerName" },
+        openingDates: { $push: "$dateGiven" },
+      },
+    },
+  ]);
 
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
