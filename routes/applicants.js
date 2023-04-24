@@ -25,15 +25,21 @@ router.get("/search", async (req, res) => {
       .skip((page - 1) * limit)
       .exec();
 
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
-
     // * Get total documents in the collection
     const count = await applicantsInfo.countDocuments(query);
 
     // * Calculate total pages
     const totalPages = Math.ceil(count / limit) || 1;
+
+    if (!applicants) {
+      res.status(200).json({
+        applicants,
+        totalPages,
+        currentPage: page,
+        limit,
+        totalCount: count,
+      });
+    }
 
     res.status(200).json({
       applicants,
@@ -64,15 +70,21 @@ router.get("/status", async (req, res) => {
       .skip((page - 1) * limit)
       .exec();
 
-    if (!applicants.length) {
-      throw new Error("No applicants found!");
-    }
-
     // * Get total documents in the collection
     const count = await applicantsInfo.countDocuments(query);
 
     // * Calculate total pages
     const totalPages = Math.ceil(count / limit) || 1;
+
+    if (!applicants) {
+      res.status(200).json({
+        applicants,
+        totalPages,
+        currentPage: page,
+        limit,
+        totalCount: count,
+      });
+    }
 
     res.status(200).json({
       applicants,
@@ -142,16 +154,6 @@ router.patch("/reset", async (req, res) => {
 
 // Get all applicants
 router.get("/*", async (req, res) => {
-  //   let options = {};
-
-  //   if (req.query.yearlvl && req.query.course) {
-  //     options.year = req.query.yearlvl;
-  //     options.course = req.query.course;
-  //   }
-
-  //   if (req.query.yearlvl) options.year = req.query.yearlvl;
-  //   if (req.query.degree) options.course = req.query.degree;
-
   const options = {
     ...(req.query.yearlvl && { year: req.query.yearlvl }),
     ...(req.query.course || (req.query.degree && { course: req.query.course || req.query.degree })),
