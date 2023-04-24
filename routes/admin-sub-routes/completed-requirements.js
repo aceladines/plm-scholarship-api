@@ -101,10 +101,7 @@ router.get("/*", async (req, res) => {
         providerNamesAndOpenings,
       });
     } else if (applicants.length === 1) {
-      await applicantsInfo.findOneAndUpdate(
-        { studentNum: applicants[0].studentNum },
-        { rank: 1 }
-      );
+      await applicantsInfo.findOneAndUpdate({ studentNum: applicants[0].studentNum }, { rank: 1 });
 
       // return response with posts, total pages, and current page
       res.status(200).json({
@@ -215,7 +212,7 @@ router.get("/*", async (req, res) => {
       });
     }
   } catch (e) {
-    res.status(404).json(e.message);
+    res.status(400).json(e.message);
   }
 });
 
