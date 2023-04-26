@@ -26,6 +26,10 @@ const openings = new Schema({
       wordLink: {
         type: String,
       },
+      allSigned: {
+        type: Boolean,
+        default: false,
+      },
       remarks: [remarkSchema],
     },
   ],
