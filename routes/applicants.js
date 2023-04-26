@@ -126,7 +126,7 @@ router.patch("/reset", async (req, res) => {
       await applicantsInfo.updateMany(
         {
           approvalStatus: "APPROVED",
-          scholarshipProvider: { $exist: false },
+          scholarshipProvider: { $exists: false },
           providerOpeningDate: { $exists: false },
         },
         { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
