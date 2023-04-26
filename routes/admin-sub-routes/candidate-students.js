@@ -613,6 +613,8 @@ router.get("/*", async (req, res) => {
     const count = await applicantsInfo.countDocuments({
       $and: [
         { approvalStatus: "APPROVED" },
+        { scholarshipProvider: { $exists: true } },
+        { providerOpeningDate: { $exists: true } },
         { providerOpeningDate: options.providerOpeningDate },
         { scholarshipProvider: options.provider },
       ],
