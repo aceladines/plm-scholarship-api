@@ -7,23 +7,15 @@ let options = {};
 
 router.post("/send", async (req, res) => {
   const email = req.body.email;
-  const name = req.body.name;
   const dateSigned = new Date().toISOString();
-
-  options = {
-    provider: options.provider,
-    providerOpeningDate: options.providerOpeningDate,
-  };
 
   try {
     if (Object.keys(options).length === 0 && options.constructor === Object) {
-      res.status(400).json({ message: "Options are empty!" });
-      return;
+      return res.status(400).json({ message: "Options are empty!" });
     }
 
     let remarks = {
       email,
-      name,
       dateSigned,
       status: "Signed",
     };
@@ -71,7 +63,6 @@ router.post("/send", async (req, res) => {
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
-  let options = {};
 
   if (initialOption && (req.query.provider === undefined || req.query.openingDate === undefined)) {
     options = {
