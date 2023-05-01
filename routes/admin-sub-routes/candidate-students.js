@@ -542,6 +542,12 @@ router.get("/generate-csv", async (req, res) => {
 router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
+
+  let committees = [];
+
+  // * Get all the commitee members
+  const committeeMembers = await superUsers.find({ role: "committee" }).exec();
+
   options = {};
 
   if (initialOption && (req.query.provider === undefined || req.query.openingDate === undefined)) {
@@ -554,6 +560,50 @@ router.get("/*", async (req, res) => {
       provider: req.query.provider,
       providerOpeningDate: req.query.openingDate,
     };
+  }
+
+  // * Check if the current committee member have remarks on the current opening
+  const currentProviderAndOpening = await openings.find(
+    {
+      providerName: options.provider,
+      "openingDates.date": options.providerOpeningDate,
+    },
+    (projection = {
+      providerName: 1,
+      openingDates: {
+        $elemMatch: {
+          date: options.providerOpeningDate,
+        },
+      },
+    })
+  );
+
+  for (committeeMember of committeeMembers) {
+    if (currentProviderAndOpening[0].openingDates[0]) {
+      const remarks = currentProviderAndOpening[0].openingDates[0].remarks;
+      const committeeMemberRemarks = remarks.filter((remark) => remark.email === committeeMember.email);
+
+      committees.push({
+        name: `${committeeMember.firstName} ${committeeMember.lastName}`,
+        remarks: committeeMemberRemarks[0]?.status ?? "Not signed",
+      });
+    }
+  }
+
+  const allSigned = committees.every((committee) => committee.remarks === "Signed");
+
+  if (allSigned) {
+    await openings.findOneAndUpdate(
+      {
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      },
+      {
+        $set: {
+          "openingDates.$.allSigned": true,
+        },
+      }
+    );
   }
 
   //Get provider names and provider opening dates
@@ -573,6 +623,8 @@ router.get("/*", async (req, res) => {
       },
     },
   ]);
+
+  // * If the length of remark array is 4, then the list of applicants is evaluated. The allSigned value will be set to true.
 
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
@@ -630,6 +682,7 @@ router.get("/*", async (req, res) => {
       currentPage: page,
       limit,
       totalCount: count,
+      committees,
       providerNamesAndOpenings,
     });
   } catch (e) {
