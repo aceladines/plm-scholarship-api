@@ -115,6 +115,8 @@ router.put(
         birthdate: req.body.birthdate,
         householdIncome: req.body.householdIncome,
         currentGwa: req.body.currentGwa,
+        approvalStatus: "PENDING",
+        dateUpdated: new Date().toISOString(),
       };
 
       let updatedFiles = {};
