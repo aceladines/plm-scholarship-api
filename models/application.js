@@ -81,6 +81,9 @@ const applicationForm = new Schema({
     type: Date,
     required: true,
   },
+  dateUpdated: {
+    type: Date,
+  },
   approvalStatus: {
     type: String,
     required: true,
