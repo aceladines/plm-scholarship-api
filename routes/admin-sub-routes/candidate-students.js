@@ -591,7 +591,8 @@ router.get("/*", async (req, res) => {
     }
   }
 
-  const allSigned = committees.every((committee) => committee.remarks === "Signed");
+  const allSigned =
+    committees.length > 0 ? committees.every((committee) => committee.remarks === "Signed") : false;
 
   if (allSigned) {
     await openings.findOneAndUpdate(
