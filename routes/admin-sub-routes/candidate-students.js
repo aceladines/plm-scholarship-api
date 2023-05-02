@@ -683,6 +683,7 @@ router.get("/*", async (req, res) => {
       currentPage: page,
       limit,
       totalCount: count,
+      allSigned,
       committees,
       providerNamesAndOpenings,
     });
