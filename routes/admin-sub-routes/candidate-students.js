@@ -579,13 +579,14 @@ router.get("/*", async (req, res) => {
   );
 
   for (committeeMember of committeeMembers) {
-    if (currentProviderAndOpening[0].openingDates[0]) {
+    if (currentProviderAndOpening[0]?.openingDates[0]) {
       const remarks = currentProviderAndOpening[0].openingDates[0].remarks;
       const committeeMemberRemarks = remarks.filter((remark) => remark.email === committeeMember.email);
 
       committees.push({
         name: `${committeeMember.firstName} ${committeeMember.lastName}`,
         remarks: committeeMemberRemarks[0]?.status ?? "Not signed",
+        dateSigned: committeeMemberRemarks[0]?.dateSigned ?? "",
       });
     }
   }
