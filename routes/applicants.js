@@ -129,7 +129,10 @@ router.patch("/reset", async (req, res) => {
           scholarshipProvider: { $exists: false },
           providerOpeningDate: { $exists: false },
         },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+        {
+          $unset: { EquivGWA: "", EquivInc: "", rank: "" },
+          $set: { approvalStatus: "RESUBMISSION", dateOfResubmission: new Date().toISOString() },
+        }
       );
     }
     if (statusToReset === "DISAPPROVED") {
@@ -137,13 +140,19 @@ router.patch("/reset", async (req, res) => {
         {
           approvalStatus: "DISAPPROVED",
         },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+        {
+          $unset: { EquivGWA: "", EquivInc: "", rank: "" },
+          $set: { approvalStatus: "RESUBMISSION", dateOfResubmission: new Date().toISOString() },
+        }
       );
     }
     if (statusToReset === "RESUBMISSION") {
       await applicantsInfo.updateMany(
         { approvalStatus: "RESUBMISSION" },
-        { $unset: { EquivGWA: "", EquivInc: "", rank: "" }, $set: { approvalStatus: "RESUBMISSION" } }
+        {
+          $unset: { EquivGWA: "", EquivInc: "", rank: "" },
+          $set: { approvalStatus: "RESUBMISSION", dateOfResubmission: new Date().toISOString() },
+        }
       );
     }
     res.status(200).json({ message: "Reset successful!" });
