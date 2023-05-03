@@ -87,7 +87,7 @@ router.post("/archive-data/:email", async (req, res) => {
     const archivedDoc = await applicantsInfo.findOne({ email: req.params.email }).lean().exec();
     await archives.insertMany(archivedDoc);
 
-    await db.applicantsInfo.deleteOne({ email: req.params.email });
+    await applicantsInfo.deleteOne({ email: req.params.email });
 
     res.status(200).json({ message: "Archived successfully!!" });
   } catch (error) {
