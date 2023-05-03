@@ -134,10 +134,20 @@ router.get("/*", async (req, res) => {
     const totalPages = Math.ceil(count / limit) || 1;
 
     // Get wordLink
-    let wordLink = await openings.findOne({
-      providerName: options.provider,
-      "openingDates.date": options.providerOpeningDate,
-    });
+    let wordLink = await openings.findOne(
+      {
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      },
+      (projection = {
+        providerName: 1,
+        openingDates: {
+          $elemMatch: {
+            date: options.providerOpeningDate,
+          },
+        },
+      })
+    );
 
     wordLink = wordLink?.openingDates[0].wordLink ?? "";
 
