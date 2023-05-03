@@ -626,7 +626,23 @@ router.get("/*", async (req, res) => {
     },
   ]);
 
-  // * If the length of remark array is 4, then the list of applicants is evaluated. The allSigned value will be set to true.
+  // Get wordLink
+  let wordLink = await openings.findOne(
+    {
+      providerName: options.provider,
+      "openingDates.date": options.providerOpeningDate,
+    },
+    (projection = {
+      providerName: 1,
+      openingDates: {
+        $elemMatch: {
+          date: options.providerOpeningDate,
+        },
+      },
+    })
+  );
+
+  wordLink = wordLink?.openingDates[0].wordLink ?? "";
 
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
@@ -684,6 +700,7 @@ router.get("/*", async (req, res) => {
       currentPage: page,
       limit,
       totalCount: count,
+      wordLink,
       allSigned,
       committees,
       providerNamesAndOpenings,
