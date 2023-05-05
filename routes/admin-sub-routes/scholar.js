@@ -122,7 +122,7 @@ router.post("/archive-data/:email", async (req, res) => {
 });
 
 // * Delete Records based on options
-router.post("/archive-data", async (req, res) => {
+router.post("/archive-datas", async (req, res) => {
   if (Object.keys(options).length === 0) return res.status(400).json({ message: "No data to archive!!" });
 
   try {
@@ -145,11 +145,11 @@ router.post("/archive-data", async (req, res) => {
     const scholarship = await scholarships.findOne({ providerName: options.scholarshipProvider });
 
     if (scholarship.dateGiven.length === 1) {
-      await scholarships.findOneAndDelete({ providerName: scholarshipProvider });
+      await scholarships.findOneAndDelete({ providerName: options.scholarshipProvider });
     } else {
       await scholarships.findOneAndUpdate(
-        { providerName: scholarshipProvider },
-        { $pull: { dateGiven: { date: options.dateOfBecomingScholar.toISOString().substr(0, 10) } } }
+        { providerName: options.scholarshipProvider },
+        { $pull: { dateGiven: { date: options.dateOfBecomingScholar.substr(0, 10) } } }
       );
     }
 
