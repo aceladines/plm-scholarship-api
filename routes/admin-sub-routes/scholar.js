@@ -154,7 +154,7 @@ router.post("/archive-data", async (req, res) => {
     }
 
     // Delete documents
-    await db.applicantsInfo.deleteMany(query);
+    await applicantsInfo.deleteMany(query);
 
     res.status(200).json({ message: "Archived successfully!!" });
   } catch (error) {
