@@ -85,7 +85,33 @@ router.get("/search", async (req, res) => {
 router.post("/archive-data/:email", async (req, res) => {
   try {
     const archivedDoc = await applicantsInfo.findOne({ email: req.params.email }).lean().exec();
+
+    const scholarshipProvider = archivedDoc.scholarshipProvider;
+    const dateOfBecomingScholar = archivedDoc.dateOfBecomingScholar;
+
     await archives.insertMany(archivedDoc);
+
+    // * Get all the applicants that have scholarshipProvider and dateGiven fields
+
+    const applicants = await applicantsInfo.find({
+      approvalStatus: "SCHOLAR",
+      $and: [{ scholarshipProvider }, { dateOfBecomingScholar }],
+    });
+
+    // * Count the number of dateGiven index in the current provider
+
+    const scholarship = await scholarships.findOne({ providerName: scholarshipProvider });
+
+    if (applicants.length === 1) {
+      if (scholarship.dateGiven.length === 1) {
+        await scholarships.findOneAndDelete({ providerName: scholarshipProvider });
+      } else {
+        await scholarships.findOneAndUpdate(
+          { providerName: scholarshipProvider },
+          { $pull: { dateGiven: { date: dateOfBecomingScholar.toISOString().substr(0, 10) } } }
+        );
+      }
+    }
 
     await applicantsInfo.deleteOne({ email: req.params.email });
 
@@ -111,7 +137,21 @@ router.post("/archive-data", async (req, res) => {
 
     // Archive documents
     const archivedDocs = await applicantsInfo.find(query).lean().exec();
+
     await archives.insertMany(archivedDocs);
+
+    // * Count the number of dateGiven index in the current provider
+
+    const scholarship = await scholarships.findOne({ providerName: options.scholarshipProvider });
+
+    if (scholarship.dateGiven.length === 1) {
+      await scholarships.findOneAndDelete({ providerName: scholarshipProvider });
+    } else {
+      await scholarships.findOneAndUpdate(
+        { providerName: scholarshipProvider },
+        { $pull: { dateGiven: { date: options.dateOfBecomingScholar.toISOString().substr(0, 10) } } }
+      );
+    }
 
     // Delete documents
     await db.applicantsInfo.deleteMany(query);
