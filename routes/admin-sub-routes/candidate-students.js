@@ -19,49 +19,118 @@ router.post("/send-to-committee", async (req, res) => {
     return res.status(400).json({ message: "No options selected!" });
 
   try {
-    // Find the matching openingDates element and update the wordLink property
-    const updatedOpening = await openings.findOneAndUpdate(
-      {
-        providerName: options.provider,
-        "openingDates.date": options.providerOpeningDate,
-      },
-      {
-        $set: {
-          "openingDates.$.wordLink": wordLink,
-        },
-      },
-      {
-        projection: {
-          providerName: 1,
-          openingDates: {
-            $elemMatch: {
-              date: options.providerOpeningDate,
-            },
-          },
-        },
-        new: true,
-      }
-    );
-
-    if (!updatedOpening) {
-      return res.status(404).json({ message: "No matching document found." });
-    }
-
-    const committees = (await superUsers.find({ role: "committee" })).map((user) => {
-      return { email: user.email, firstName: user.firstName };
+    // * Check if there is an existing wordLink
+    const existingWordLink = await openings.findOne({
+      $and: [
+        { providerName: options.provider },
+        { "openingDates.date": options.providerOpeningDate },
+        { "openingDates.wordLink": { $exists: true } },
+      ],
     });
 
-    for (const x of committees) {
-      let sendMail = {
-        TO: x.email,
-        firstName: x.firstName,
-        provider: options.provider,
-        providerOpeningDate: options.providerOpeningDate,
-        option: 4,
-        webLink,
-      };
+    if (!existingWordLink) {
+      // Find the matching openingDates element and update the wordLink property
+      const updatedOpening = await openings.findOneAndUpdate(
+        {
+          providerName: options.provider,
+          "openingDates.date": options.providerOpeningDate,
+        },
+        {
+          $set: {
+            "openingDates.$.wordLink": wordLink,
+          },
+        },
+        {
+          projection: {
+            providerName: 1,
+            openingDates: {
+              $elemMatch: {
+                date: options.providerOpeningDate,
+              },
+            },
+          },
+          new: true,
+        }
+      );
 
-      await mail.sendEmail(sendMail);
+      if (!updatedOpening) {
+        return res.status(404).json({ message: "No matching document found." });
+      }
+
+      const committees = (await superUsers.find({ role: "committee" })).map((user) => {
+        return { email: user.email, firstName: user.firstName };
+      });
+
+      for (const x of committees) {
+        let sendMail = {
+          TO: x.email,
+          firstName: x.firstName,
+          provider: options.provider,
+          providerOpeningDate: options.providerOpeningDate,
+          option: 4,
+          webLink,
+        };
+
+        await mail.sendEmail(sendMail);
+      }
+    } else {
+      // Find the matching openingDates element and update the wordLink property
+      const updatedOpening = await openings.findOneAndUpdate(
+        {
+          providerName: options.provider,
+          "openingDates.date": options.providerOpeningDate,
+        },
+        {
+          $set: {
+            "openingDates.$.wordLink": wordLink,
+          },
+        },
+        {
+          projection: {
+            providerName: 1,
+            openingDates: {
+              $elemMatch: {
+                date: options.providerOpeningDate,
+              },
+            },
+          },
+          new: true,
+        }
+      );
+
+      if (!updatedOpening) {
+        return res.status(404).json({ message: "Failed to update wordLink." });
+      }
+
+      const committees = (await superUsers.find({ role: "committee" })).map((user) => {
+        return { email: user.email, firstName: user.firstName };
+      });
+
+      for (const x of committees) {
+        let sendMail = {
+          TO: x.email,
+          firstName: x.firstName,
+          provider: options.provider,
+          providerOpeningDate: options.providerOpeningDate,
+          option: 6,
+          webLink,
+        };
+
+        await mail.sendEmail(sendMail);
+      }
+
+      // * Reset all signatures
+      await openings.findOneAndUpdate(
+        {
+          providerName: options.provider,
+          "openingDates.date": options.providerOpeningDate,
+        },
+        {
+          $set: {
+            "openingDates.$.remarks": [],
+          },
+        }
+      );
     }
 
     res.status(200).json({ message: "Word link successfully updated!" });
