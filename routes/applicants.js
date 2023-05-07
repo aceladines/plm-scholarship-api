@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 applicantsInfo = require("../models/application");
+const { resetMailer } = require("../utils/resetMailer");
 
 // * Search for applicants
 router.get("/search", async (req, res) => {
@@ -123,6 +124,14 @@ router.patch("/reset", async (req, res) => {
 
   try {
     if (statusToReset === "APPROVED") {
+      const dataToSendMails = await applicantsInfo.find({
+        approvalStatus: "APPROVED",
+        scholarshipProvider: { $exists: true },
+        providerOpeningDate: { $exists: true },
+      });
+
+      await resetMailer(dataToSendMails);
+
       await applicantsInfo.updateMany(
         {
           approvalStatus: "APPROVED",
@@ -136,6 +145,12 @@ router.patch("/reset", async (req, res) => {
       );
     }
     if (statusToReset === "DISAPPROVED") {
+      const dataToSendMails = await applicantsInfo.find({
+        approvalStatus: "DISAPPROVED",
+      });
+
+      await resetMailer(dataToSendMails);
+
       await applicantsInfo.updateMany(
         {
           approvalStatus: "DISAPPROVED",
@@ -147,6 +162,12 @@ router.patch("/reset", async (req, res) => {
       );
     }
     if (statusToReset === "RESUBMISSION") {
+      const dataToSendMails = await applicantsInfo.find({
+        approvalStatus: "RESUBMISSION",
+      });
+
+      await resetMailer(dataToSendMails);
+
       await applicantsInfo.updateMany(
         { approvalStatus: "RESUBMISSION" },
         {
