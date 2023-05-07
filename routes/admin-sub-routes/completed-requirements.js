@@ -70,18 +70,18 @@ router.get("/*", async (req, res) => {
   const limit = req.query.limit || 10;
   try {
     const options = {};
-    if (req.query.yrlLvl || req.query.degreeProgram) {
-      let yrlLvl = [];
+    if (req.query.yrLvl || req.query.degreeProgram) {
+      let yrLvl = [];
       let degreeProgram = [];
 
-      if (req.query.yrlLvl) yrlLvl = JSON.parse(req.query.yrlLvl);
+      if (req.query.yrLvl) yrLvl = JSON.parse(req.query.yrLvl);
       if (req.query.degreeProgram) degreeProgram = JSON.parse(req.query.degreeProgram);
 
       options = {
         approvalStatus: "APPROVED",
         providerOpeningDate: { $exists: false },
         scholarshipProvider: { $exists: false },
-        $or: [{ year: { $in: yrlLvl } }, { course: { $in: degreeProgram } }],
+        $or: [{ year: { $in: yrLvl } }, { course: { $in: degreeProgram } }],
       };
     } else {
       options = {
@@ -107,7 +107,7 @@ router.get("/*", async (req, res) => {
     //Get provider names and provider opening dates
     const providerNamesAndOpenings = await openings.find().exec();
 
-    if (req.query.yrlLvl === undefined && req.query.degreeProgram === undefined) {
+    if (req.query.yrLvl === undefined && req.query.degreeProgram === undefined) {
       if (applicants.length === 0) {
         res.status(200).json({
           applicants,
