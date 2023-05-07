@@ -107,116 +107,128 @@ router.get("/*", async (req, res) => {
     //Get provider names and provider opening dates
     const providerNamesAndOpenings = await openings.find().exec();
 
-    if (applicants.length === 0) {
-      res.status(200).json({
-        applicants,
-        totalPages,
-        currentPage: page,
-        limit,
-        totalCount: count,
-        providerNamesAndOpenings,
-      });
-    } else if (applicants.length === 1) {
-      await applicantsInfo.findOneAndUpdate({ studentNum: applicants[0].studentNum }, { rank: 1 });
+    if (req.query.yrlLvl === undefined && req.query.degreeProgram === undefined) {
+      if (applicants.length === 0) {
+        res.status(200).json({
+          applicants,
+          totalPages,
+          currentPage: page,
+          limit,
+          totalCount: count,
+          providerNamesAndOpenings,
+        });
+      } else if (applicants.length === 1) {
+        await applicantsInfo.findOneAndUpdate({ studentNum: applicants[0].studentNum }, { rank: 1 });
 
-      // return response with posts, total pages, and current page
-      res.status(200).json({
-        applicants,
-        totalPages,
-        currentPage: page,
-        limit,
-        totalCount: count,
-        providerNamesAndOpenings,
-      });
-    } else {
-      let sum = 1;
-      let indexFlag = 2;
-      let rank = 0;
-      let rankArr = [];
-      let totalScoreArr = [];
+        // return response with posts, total pages, and current page
+        res.status(200).json({
+          applicants,
+          totalPages,
+          currentPage: page,
+          limit,
+          totalCount: count,
+          providerNamesAndOpenings,
+        });
+      } else {
+        let sum = 1;
+        let indexFlag = 2;
+        let rank = 0;
+        let rankArr = [];
+        let totalScoreArr = [];
 
-      // Push the totalScore into 'totalScoreArr'
-      for (let i = 0; i < applicants.length; i++) {
-        totalScoreArr.push(applicants[i].totalScore);
-      }
-
-      // Making a set from 'totalScoreArr'
-      let set = new Set(totalScoreArr);
-      let distinctElems = [...set];
-
-      // Counting occurences of 'totalScore' values
-      let occurence = totalScoreArr.reduce(function (acc, current) {
-        if (acc[current]) {
-          acc[current]++;
-        } else {
-          acc[current] = 1;
+        // Push the totalScore into 'totalScoreArr'
+        for (let i = 0; i < applicants.length; i++) {
+          totalScoreArr.push(applicants[i].totalScore);
         }
-        return acc;
-      }, {});
 
-      let keys = [],
-        k,
-        i,
-        len;
+        // Making a set from 'totalScoreArr'
+        let set = new Set(totalScoreArr);
+        let distinctElems = [...set];
 
-      for (k in occurence) {
-        if (occurence.hasOwnProperty(k)) {
-          keys.push(k);
+        // Counting occurences of 'totalScore' values
+        let occurence = totalScoreArr.reduce(function (acc, current) {
+          if (acc[current]) {
+            acc[current]++;
+          } else {
+            acc[current] = 1;
+          }
+          return acc;
+        }, {});
+
+        let keys = [],
+          k,
+          i,
+          len;
+
+        for (k in occurence) {
+          if (occurence.hasOwnProperty(k)) {
+            keys.push(k);
+          }
         }
-      }
 
-      // Sorting the keys
-      keys.sort().reverse();
+        // Sorting the keys
+        keys.sort().reverse();
 
-      len = keys.length;
-      let sortedOccuranceArr = [];
+        len = keys.length;
+        let sortedOccuranceArr = [];
 
-      for (i = 0; i < len; i++) {
-        k = keys[i];
-        sortedOccuranceArr.push(occurence[k]);
-      }
+        for (i = 0; i < len; i++) {
+          k = keys[i];
+          sortedOccuranceArr.push(occurence[k]);
+        }
 
-      let myMap = new Map();
+        let myMap = new Map();
 
-      for (let i = 0; i < distinctElems.length; i++) {
-        myMap.set(distinctElems[i], sortedOccuranceArr[i]);
-      }
+        for (let i = 0; i < distinctElems.length; i++) {
+          myMap.set(distinctElems[i], sortedOccuranceArr[i]);
+        }
 
-      for (let i = 0; i < applicants.length - 1; i++) {
-        // Main logic for ranking
-        if (applicants[i].totalScore === applicants[i + 1].totalScore) {
-          sum = sum + indexFlag++;
+        for (let i = 0; i < applicants.length - 1; i++) {
+          // Main logic for ranking
+          if (applicants[i].totalScore === applicants[i + 1].totalScore) {
+            sum = sum + indexFlag++;
 
-          if (i === applicants.length - 2) {
+            if (i === applicants.length - 2) {
+              rank = sum / myMap.get(applicants[i].totalScore);
+              rankArr.push(rank);
+            }
+          } else if (applicants[i].totalScore !== applicants[i + 1].totalScore) {
             rank = sum / myMap.get(applicants[i].totalScore);
             rankArr.push(rank);
-          }
-        } else if (applicants[i].totalScore !== applicants[i + 1].totalScore) {
-          rank = sum / myMap.get(applicants[i].totalScore);
-          rankArr.push(rank);
-          sum = indexFlag++;
-          if (i === applicants.length - 2) {
-            rank = --indexFlag;
-            rankArr.push(rank);
+            sum = indexFlag++;
+            if (i === applicants.length - 2) {
+              rank = --indexFlag;
+              rankArr.push(rank);
+            }
           }
         }
-      }
 
-      let finalRanking = [];
+        let finalRanking = [];
 
-      for (let i = 0; i < rankArr.length; i++) {
-        for (let j = 0; j < sortedOccuranceArr[i]; j++) {
-          finalRanking.push(rankArr[i]);
+        for (let i = 0; i < rankArr.length; i++) {
+          for (let j = 0; j < sortedOccuranceArr[i]; j++) {
+            finalRanking.push(rankArr[i]);
+          }
         }
-      }
 
-      for (let i = 0; i < applicants.length; i++) {
-        await applicantsInfo.findOneAndUpdate(
-          { studentNum: applicants[i].studentNum },
-          { rank: parseFloat(finalRanking[i]) }
-        );
-      }
+        for (let i = 0; i < applicants.length; i++) {
+          await applicantsInfo.findOneAndUpdate(
+            { studentNum: applicants[i].studentNum },
+            { rank: parseFloat(finalRanking[i]) }
+          );
+        }
 
+        // return response with posts, total pages, and current page
+        res.status(200).json({
+          applicants,
+          totalPages,
+          currentPage: page,
+          limit,
+          totalCount: count,
+          providerNamesAndOpenings,
+        });
+      }
+    } else {
       // return response with posts, total pages, and current page
       res.status(200).json({
         applicants,
