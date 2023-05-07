@@ -69,11 +69,10 @@ router.get("/*", async (req, res) => {
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
   try {
-    const options = {};
+    let options = {};
+    let yrLvl = [];
+    let degreeProgram = [];
     if (req.query.yrLvl || req.query.degreeProgram) {
-      let yrLvl = [];
-      let degreeProgram = [];
-
       if (req.query.yrLvl) yrLvl = JSON.parse(req.query.yrLvl);
       if (req.query.degreeProgram) degreeProgram = JSON.parse(req.query.degreeProgram);
 
