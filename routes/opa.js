@@ -69,13 +69,11 @@ router.get("/search", async (req, res) => {
 
 // * Generate Report
 router.get("/generate-csv", async (req, res) => {
-  // let { startDate, endDate } = req.body;
+  let { startDate, endDate } = req.query;
 
-  // if (!startDate || !endDate)
-  //   return res.status(400).json({ error: "Please provide a start date and end date" });
+  if (!startDate || !endDate)
+    return res.status(400).json({ error: "Please provide a start date and end date" });
 
-  let startDate = "2023-05-04";
-  let endDate = "2023-05-05";
   let startDateCopy = startDate;
   let endDateCopy = endDate;
 
