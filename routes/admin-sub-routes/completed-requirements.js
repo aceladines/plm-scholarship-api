@@ -69,11 +69,27 @@ router.get("/*", async (req, res) => {
   const page = req.query.page || 1;
   const limit = req.query.limit || 10;
   try {
-    const options = {
-      approvalStatus: "APPROVED",
-      providerOpeningDate: { $exists: false },
-      scholarshipProvider: { $exists: false },
-    };
+    const options = {};
+    if (req.query.yrlLvl || req.query.degreeProgram) {
+      let yrlLvl = [];
+      let degreeProgram = [];
+
+      if (req.query.yrlLvl) yrlLvl = JSON.parse(req.query.yrlLvl);
+      if (req.query.degreeProgram) degreeProgram = JSON.parse(req.query.degreeProgram);
+
+      options = {
+        approvalStatus: "APPROVED",
+        providerOpeningDate: { $exists: false },
+        scholarshipProvider: { $exists: false },
+        $or: [{ year: { $in: yrlLvl } }, { course: { $in: degreeProgram } }],
+      };
+    } else {
+      options = {
+        approvalStatus: "APPROVED",
+        providerOpeningDate: { $exists: false },
+        scholarshipProvider: { $exists: false },
+      };
+    }
     // execute query with page and limit values
     const applicants = await applicantsInfo
       .find(options)
