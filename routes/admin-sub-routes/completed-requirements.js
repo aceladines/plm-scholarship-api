@@ -80,7 +80,8 @@ router.get("/*", async (req, res) => {
         approvalStatus: "APPROVED",
         providerOpeningDate: { $exists: false },
         scholarshipProvider: { $exists: false },
-        $or: [{ year: { $in: yrLvl } }, { course: { $in: degreeProgram } }],
+        ...(req.query.yrLvl && { year: { $in: yrLvl } }),
+        ...(req.query.degreeProgram && { course: { $in: degreeProgram } }),
       };
     } else {
       options = {
