@@ -93,7 +93,7 @@ router.get("/*", async (req, res) => {
     // execute query with page and limit values
     const applicants = await applicantsInfo
       .find(options)
-      .sort({ rank: 1 })
+      .sort({ totalScore: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
@@ -218,9 +218,17 @@ router.get("/*", async (req, res) => {
           );
         }
 
+        // Sort applicants by rank before sending response
+        const sortedApplicants = await applicantsInfo
+          .find(options)
+          .sort({ rank: 1 })
+          .limit(limit * 1)
+          .skip((page - 1) * limit)
+          .exec();
+
         // return response with posts, total pages, and current page
         res.status(200).json({
-          applicants,
+          applicants: sortedApplicants,
           totalPages,
           currentPage: page,
           limit,
@@ -229,9 +237,17 @@ router.get("/*", async (req, res) => {
         });
       }
     } else {
+      // Sort applicants by rank before sending response
+      const sortedApplicants = await applicantsInfo
+        .find(options)
+        .sort({ rank: 1 })
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .exec();
+
       // return response with posts, total pages, and current page
       res.status(200).json({
-        applicants,
+        applicants: sortedApplicants,
         totalPages,
         currentPage: page,
         limit,
