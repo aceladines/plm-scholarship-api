@@ -93,7 +93,7 @@ router.get("/*", async (req, res) => {
     // execute query with page and limit values
     const applicants = await applicantsInfo
       .find(options)
-      .sort({ totalScore: -1 })
+      .sort({ rank: 1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
       .exec();
