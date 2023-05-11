@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 applicantsInfo = require("../models/application");
 openings = require("../models/opening");
+superUsers = require("../models/superuser");
 
 let options = {};
 
@@ -64,6 +65,11 @@ router.get("/*", async (req, res) => {
   //LIFO (Last In First Out)
   const initialOption = await openings.findOne().sort({ _id: -1 }).exec();
 
+  let committees = [];
+
+  // * Get all the commitee members
+  const committeeMembers = await superUsers.find({ role: "committee" }).exec();
+
   if (initialOption && (req.query.provider === undefined || req.query.openingDate === undefined)) {
     options = {
       provider: initialOption.providerName,
@@ -74,6 +80,52 @@ router.get("/*", async (req, res) => {
       provider: req.query.provider,
       providerOpeningDate: req.query.openingDate,
     };
+  }
+
+  // * Check if the current committee member have remarks on the current opening
+  const currentProviderAndOpening = await openings.find(
+    {
+      providerName: options.provider,
+      "openingDates.date": options.providerOpeningDate,
+    },
+    (projection = {
+      providerName: 1,
+      openingDates: {
+        $elemMatch: {
+          date: options.providerOpeningDate,
+        },
+      },
+    })
+  );
+
+  for (committeeMember of committeeMembers) {
+    if (currentProviderAndOpening[0]?.openingDates[0]) {
+      const remarks = currentProviderAndOpening[0].openingDates[0].remarks;
+      const committeeMemberRemarks = remarks.filter((remark) => remark.email === committeeMember.email);
+
+      committees.push({
+        name: `${committeeMember.firstName} ${committeeMember.lastName}`,
+        remarks: committeeMemberRemarks[0]?.status ?? "Not signed",
+        dateSigned: committeeMemberRemarks[0]?.dateSigned ?? "",
+      });
+    }
+  }
+
+  const allSigned =
+    committees.length > 0 ? committees.every((committee) => committee.remarks === "Signed") : false;
+
+  if (allSigned) {
+    await openings.findOneAndUpdate(
+      {
+        providerName: options.provider,
+        "openingDates.date": options.providerOpeningDate,
+      },
+      {
+        $set: {
+          "openingDates.$.allSigned": true,
+        },
+      }
+    );
   }
 
   //Get provider names and provider opening dates
@@ -154,11 +206,13 @@ router.get("/*", async (req, res) => {
     // return response with posts, total pages, and current page
     res.status(200).json({
       applicants,
-      wordLink,
       totalPages,
       currentPage: page,
       limit,
       totalCount: count,
+      wordLink,
+      allSigned,
+      committees,
       providerNamesAndOpenings,
     });
   } catch (e) {
